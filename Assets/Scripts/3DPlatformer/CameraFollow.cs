@@ -15,5 +15,7 @@ public class CameraFollow : MonoBehaviour
     {
         Vector3 target = new Vector3(_player.position.x, 0, _player.position.z) + _offset;
         transform.position = target;
+
+        //update rotation.
     }
 }

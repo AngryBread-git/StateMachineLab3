@@ -2,7 +2,7 @@
     "name": "PlatformerPlayerInputs",
     "maps": [
         {
-            "name": "PlatformerCharControls",
+            "name": "CharacterControls",
             "id": "f1c742b8-27ec-4985-a972-7d24589ba717",
             "actions": [
                 {

@@ -24,7 +24,7 @@ public partial class @PlatformerPlayerInputs: IInputActionCollection2, IDisposab
     ""name"": ""PlatformerPlayerInputs"",
     ""maps"": [
         {
-            ""name"": ""PlatformerCharControls"",
+            ""name"": ""CharacterControls"",
             ""id"": ""f1c742b8-27ec-4985-a972-7d24589ba717"",
             ""actions"": [
                 {
@@ -140,10 +140,10 @@ public partial class @PlatformerPlayerInputs: IInputActionCollection2, IDisposab
     ],
     ""controlSchemes"": []
 }");
-        // PlatformerCharControls
-        m_PlatformerCharControls = asset.FindActionMap("PlatformerCharControls", throwIfNotFound: true);
-        m_PlatformerCharControls_Move = m_PlatformerCharControls.FindAction("Move", throwIfNotFound: true);
-        m_PlatformerCharControls_Run = m_PlatformerCharControls.FindAction("Run", throwIfNotFound: true);
+        // CharacterControls
+        m_CharacterControls = asset.FindActionMap("CharacterControls", throwIfNotFound: true);
+        m_CharacterControls_Move = m_CharacterControls.FindAction("Move", throwIfNotFound: true);
+        m_CharacterControls_Run = m_CharacterControls.FindAction("Run", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -202,26 +202,26 @@ public partial class @PlatformerPlayerInputs: IInputActionCollection2, IDisposab
         return asset.FindBinding(bindingMask, out action);
     }
 
-    // PlatformerCharControls
-    private readonly InputActionMap m_PlatformerCharControls;
-    private List<IPlatformerCharControlsActions> m_PlatformerCharControlsActionsCallbackInterfaces = new List<IPlatformerCharControlsActions>();
-    private readonly InputAction m_PlatformerCharControls_Move;
-    private readonly InputAction m_PlatformerCharControls_Run;
-    public struct PlatformerCharControlsActions
+    // CharacterControls
+    private readonly InputActionMap m_CharacterControls;
+    private List<ICharacterControlsActions> m_CharacterControlsActionsCallbackInterfaces = new List<ICharacterControlsActions>();
+    private readonly InputAction m_CharacterControls_Move;
+    private readonly InputAction m_CharacterControls_Run;
+    public struct CharacterControlsActions
     {
         private @PlatformerPlayerInputs m_Wrapper;
-        public PlatformerCharControlsActions(@PlatformerPlayerInputs wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Move => m_Wrapper.m_PlatformerCharControls_Move;
-        public InputAction @Run => m_Wrapper.m_PlatformerCharControls_Run;
-        public InputActionMap Get() { return m_Wrapper.m_PlatformerCharControls; }
+        public CharacterControlsActions(@PlatformerPlayerInputs wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Move => m_Wrapper.m_CharacterControls_Move;
+        public InputAction @Run => m_Wrapper.m_CharacterControls_Run;
+        public InputActionMap Get() { return m_Wrapper.m_CharacterControls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
         public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(PlatformerCharControlsActions set) { return set.Get(); }
-        public void AddCallbacks(IPlatformerCharControlsActions instance)
+        public static implicit operator InputActionMap(CharacterControlsActions set) { return set.Get(); }
+        public void AddCallbacks(ICharacterControlsActions instance)
         {
-            if (instance == null || m_Wrapper.m_PlatformerCharControlsActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_PlatformerCharControlsActionsCallbackInterfaces.Add(instance);
+            if (instance == null || m_Wrapper.m_CharacterControlsActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_CharacterControlsActionsCallbackInterfaces.Add(instance);
             @Move.started += instance.OnMove;
             @Move.performed += instance.OnMove;
             @Move.canceled += instance.OnMove;
@@ -230,7 +230,7 @@ public partial class @PlatformerPlayerInputs: IInputActionCollection2, IDisposab
             @Run.canceled += instance.OnRun;
         }
 
-        private void UnregisterCallbacks(IPlatformerCharControlsActions instance)
+        private void UnregisterCallbacks(ICharacterControlsActions instance)
         {
             @Move.started -= instance.OnMove;
             @Move.performed -= instance.OnMove;
@@ -240,22 +240,22 @@ public partial class @PlatformerPlayerInputs: IInputActionCollection2, IDisposab
             @Run.canceled -= instance.OnRun;
         }
 
-        public void RemoveCallbacks(IPlatformerCharControlsActions instance)
+        public void RemoveCallbacks(ICharacterControlsActions instance)
         {
-            if (m_Wrapper.m_PlatformerCharControlsActionsCallbackInterfaces.Remove(instance))
+            if (m_Wrapper.m_CharacterControlsActionsCallbackInterfaces.Remove(instance))
                 UnregisterCallbacks(instance);
         }
 
-        public void SetCallbacks(IPlatformerCharControlsActions instance)
+        public void SetCallbacks(ICharacterControlsActions instance)
         {
-            foreach (var item in m_Wrapper.m_PlatformerCharControlsActionsCallbackInterfaces)
+            foreach (var item in m_Wrapper.m_CharacterControlsActionsCallbackInterfaces)
                 UnregisterCallbacks(item);
-            m_Wrapper.m_PlatformerCharControlsActionsCallbackInterfaces.Clear();
+            m_Wrapper.m_CharacterControlsActionsCallbackInterfaces.Clear();
             AddCallbacks(instance);
         }
     }
-    public PlatformerCharControlsActions @PlatformerCharControls => new PlatformerCharControlsActions(this);
-    public interface IPlatformerCharControlsActions
+    public CharacterControlsActions @CharacterControls => new CharacterControlsActions(this);
+    public interface ICharacterControlsActions
     {
         void OnMove(InputAction.CallbackContext context);
         void OnRun(InputAction.CallbackContext context);

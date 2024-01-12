@@ -12,13 +12,22 @@ public class AnimationAndMovementController : MonoBehaviour
     private int _isWalkingHash;
     private int _isRunningHash;
 
-    [Header("Player Control")]
-    [SerializeField] private float rotationFactor;
-    [SerializeField] private float walkSpeed;
-    [SerializeField] private float runSpeed;
+    [Header("Player Control Variables")]
+    [SerializeField] private float _rotationFactor = 0.6f;
+    [SerializeField] private float _walkSpeed = 1.5f;
+    [SerializeField] private float _runSpeed = 3.0f;
 
-    [SerializeField] private float gravityWhileAirborne;
-    [SerializeField] private float gravityWhenGrounded;
+    private float _gravityWhileAirborne;
+    [SerializeField] private float _gravityWhenGrounded = 0.05f;
+
+    [Space(1.0f)]
+    [Header("Jump Variables")]
+    [SerializeField] private float _maxJumpHeight = 1.0f;
+    [SerializeField] private float _jumpTimeToApex = 0.25f;
+
+    private bool _isJumpPressed;
+    private float _initialJumpVelocity;
+    private bool _isJumping;
 
     [Space(1.0f)]
     //input values
@@ -47,19 +56,47 @@ public class AnimationAndMovementController : MonoBehaviour
             platformerPlayerInput.CharacterControls.Move.performed += OnMovementInput;
             platformerPlayerInput.CharacterControls.Run.started += OnRun;
             platformerPlayerInput.CharacterControls.Run.canceled += OnRun;
+
+            platformerPlayerInput.CharacterControls.Jump.started += OnJump;
+            platformerPlayerInput.CharacterControls.Jump.canceled += OnJump;
+
         };
+        SetUpJumpVariables();
+    }
+
+
+    private void SetUpJumpVariables() 
+    {
+        _gravityWhileAirborne = (2 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
+        _initialJumpVelocity = (2 * _maxJumpHeight) / _jumpTimeToApex;
+    }
+
+    public void PerformJump() 
+    {
+        //check input and grounded state, to jump 
+        if (!_isJumping && _characterController.isGrounded && _isJumpPressed)
+        {
+            _isJumping = true;
+            currentWalkMovement.y += _initialJumpVelocity;
+            currentRunMovement.y += _initialJumpVelocity;
+        }
+        //check input and grounded state, to set that it is not jumping.
+        else if (_isJumping && _characterController.isGrounded && !_isJumpPressed) 
+        {
+            _isJumping = false;
+        }
     }
 
     void OnMovementInput(InputAction.CallbackContext context) 
     {
         currentMovementInput = context.ReadValue<Vector2>();
         //set the walking speed. this will get fixed in the StateMachine version.
-        currentWalkMovement.x = currentMovementInput.x * walkSpeed;
-        currentWalkMovement.z = currentMovementInput.y * walkSpeed;
+        currentWalkMovement.x = currentMovementInput.x * _walkSpeed;
+        currentWalkMovement.z = currentMovementInput.y * _walkSpeed;
 
         //set the runnning speed. yeah, no shot this should be calculated every frame.
-        currentRunMovement.x = currentMovementInput.x * runSpeed;
-        currentRunMovement.z = currentMovementInput.y * runSpeed;
+        currentRunMovement.x = currentMovementInput.x * _runSpeed;
+        currentRunMovement.z = currentMovementInput.y * _runSpeed;
 
         //check if there is any input, and assign to bool.
         _isMovementPressed = currentWalkMovement.x != 0 || currentMovementInput.y != 0;
@@ -68,6 +105,12 @@ public class AnimationAndMovementController : MonoBehaviour
     void OnRun(InputAction.CallbackContext context) 
     {
         _isRunPressed = context.ReadValueAsButton();
+    }
+
+    private void OnJump(InputAction.CallbackContext context) 
+    {
+        _isJumpPressed = context.ReadValueAsButton();
+        Debug.Log(_isJumpPressed);
     }
 
     private void ChangeAnimation() 
@@ -112,7 +155,7 @@ public class AnimationAndMovementController : MonoBehaviour
         if (_isMovementPressed) 
         {
             Quaternion targetRotation = Quaternion.LookRotation(positionToLookAt);
-            transform.rotation = Quaternion.Slerp(currentRotation, targetRotation,rotationFactor * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(currentRotation, targetRotation,_rotationFactor * Time.deltaTime);
         }
 
     }
@@ -121,13 +164,13 @@ public class AnimationAndMovementController : MonoBehaviour
     {
         if (_characterController.isGrounded)
         {
-            currentWalkMovement.y = -gravityWhenGrounded;
-            currentRunMovement.y = -gravityWhenGrounded;
+            currentWalkMovement.y = -_gravityWhenGrounded;
+            currentRunMovement.y = -_gravityWhenGrounded;
         }
         else 
         {
-            currentWalkMovement.y = -gravityWhileAirborne;
-            currentRunMovement.y = -gravityWhileAirborne;
+            currentWalkMovement.y = -_gravityWhileAirborne;
+            currentRunMovement.y = -_gravityWhileAirborne;
         } 
     }
 
@@ -136,7 +179,7 @@ public class AnimationAndMovementController : MonoBehaviour
     {
         ChangeAnimation();
         RotateCharacter();
-        ApplyGravity();
+        
 
         if (_isRunPressed)
         {
@@ -146,6 +189,9 @@ public class AnimationAndMovementController : MonoBehaviour
         {
             _characterController.Move(currentWalkMovement * Time.deltaTime);
         }
+        //Aplly gravity after the character has moved to the new location.
+        ApplyGravity();
+        PerformJump();
     }
 
     private void OnEnable()

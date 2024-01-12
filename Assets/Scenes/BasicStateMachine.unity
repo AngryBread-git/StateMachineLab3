@@ -770,11 +770,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8f2e817531b00d4a93b569241eb11d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationFactor: 0.8
-  walkSpeed: 1.5
-  runSpeed: 3
-  gravityWhileAirborne: 9.82
-  gravityWhenGrounded: 0.05
+  _rotationFactor: 0.6
+  _walkSpeed: 1.5
+  _runSpeed: 3
+  _gravityWhenGrounded: 0.05
+  _maxJumpHeight: 1
+  _jumpTimeToApex: 0.25
   currentMovementInput: {x: 0, y: 0}
   currentWalkMovement: {x: 0, y: 0, z: 0}
   currentRunMovement: {x: 0, y: 0, z: 0}
@@ -3935,7 +3936,8 @@ Animator:
   m_StabilizeFeet: 0
   m_WarningMessage: "\nBinding warning: Some generic clip(s) animate transforms that
     are already bound by a Humanoid avatar. These transforms can only be changed
-    by Humanoid clips.\n\tTransform 'mixamorig:LeftLeg'\n\tFrom animation clip 'Running2Clone'"
+    by Humanoid clips.\n\tTransform 'mixamorig:LeftLeg'\n\tFrom animation clip 'Running2Clone'\n\tFrom
+    animation clip 'Running2Clone'"
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0

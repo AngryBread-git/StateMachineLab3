@@ -69,8 +69,10 @@ public class AnimationAndMovementController : MonoBehaviour
 
     private void SetUpJumpVariables() 
     {
-        _gravityWhileAirborne = (2 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
-        _initialJumpVelocity = (2 * _maxJumpHeight) / _jumpTimeToApex;
+        //I'm using timeToApex which means I don't multiply by 2 in the numerator.
+        _gravityWhileAirborne = (-1 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
+        _initialJumpVelocity = (_maxJumpHeight) / _jumpTimeToApex;
+
         Debug.Log(string.Format("Setup Vars, _gravityWhileAirborne: {0}", _gravityWhileAirborne));
         Debug.Log(string.Format("Setup Vars, _initialJumpVelocity: {0}", _initialJumpVelocity));
     }
@@ -83,6 +85,9 @@ public class AnimationAndMovementController : MonoBehaviour
         {
             //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
             _isJumping = true;
+
+            //the video multiplies these by 0.5f. but that seems very odd. means that maxjumpheight is incorrect.
+            //but with only _initialJumpVelocity the jump ends up twice as high as it should be.
             currentWalkMovement.y = _initialJumpVelocity;
             currentRunMovement.y = _initialJumpVelocity;
             Debug.Log(string.Format("Perform jump, walk y velocity: {0}", currentWalkMovement.y));
@@ -171,13 +176,21 @@ public class AnimationAndMovementController : MonoBehaviour
     {
         if (_characterController.isGrounded)
         {
-            currentWalkMovement.y = -_gravityWhenGrounded;
-            currentRunMovement.y = -_gravityWhenGrounded;
+            currentWalkMovement.y = _gravityWhenGrounded;
+            currentRunMovement.y = _gravityWhenGrounded;
         }
         else 
         {
-            currentWalkMovement.y -= _gravityWhileAirborne * Time.deltaTime;
-            currentRunMovement.y -= _gravityWhileAirborne * Time.deltaTime;
+            float previousYVelocity = currentWalkMovement.y;
+
+
+            //add the old velocity and the new velocity, average them and set that value.
+            //called VelocityVerlet
+            //float newYVelocity = currentWalkMovement.y + (_gravityWhileAirborne * Time.deltaTime);
+            float nextYVelocity = (previousYVelocity + (currentWalkMovement.y + (_gravityWhileAirborne * Time.deltaTime))) * 0.5f;
+
+            currentWalkMovement.y = nextYVelocity;
+            currentRunMovement.y = nextYVelocity;
         } 
     }
 
@@ -195,7 +208,7 @@ public class AnimationAndMovementController : MonoBehaviour
         }
         else
         {
-            Debug.Log(string.Format("walking, y velocity: {0}", currentWalkMovement.y));
+            //Debug.Log(string.Format("walking, y velocity: {0}", currentWalkMovement.y));
             _characterController.Move(currentWalkMovement * Time.deltaTime);
         }
         //Aplly gravity after the character has moved to the new location.

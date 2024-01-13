@@ -17,7 +17,7 @@ public class AnimationAndMovementController : MonoBehaviour
     [SerializeField] private float _walkSpeed = 1.5f;
     [SerializeField] private float _runSpeed = 3.0f;
 
-    private float _gravityWhileAirborne;
+    
     [SerializeField] private float _gravityWhenGrounded = 0.05f;
 
     [Space(1.0f)]
@@ -31,10 +31,12 @@ public class AnimationAndMovementController : MonoBehaviour
 
     [Space(1.0f)]
     //input values
-    [Header("Debug Values")]
+    [Header("Display for Debug Values")]
     [SerializeField] private Vector2 currentMovementInput;
     [SerializeField] private Vector3 currentWalkMovement;
     [SerializeField] private Vector3 currentRunMovement;
+
+    [SerializeField] private float _gravityWhileAirborne;
 
     [SerializeField] private bool _isMovementPressed;
     [SerializeField] private bool _isRunPressed;
@@ -69,16 +71,21 @@ public class AnimationAndMovementController : MonoBehaviour
     {
         _gravityWhileAirborne = (2 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
         _initialJumpVelocity = (2 * _maxJumpHeight) / _jumpTimeToApex;
+        Debug.Log(string.Format("Setup Vars, _gravityWhileAirborne: {0}", _gravityWhileAirborne));
+        Debug.Log(string.Format("Setup Vars, _initialJumpVelocity: {0}", _initialJumpVelocity));
     }
 
     public void PerformJump() 
     {
+        //Debug.Log(string.Format("Perform jump, _isJumpPressed: {0}", _isJumpPressed));
         //check input and grounded state, to jump 
         if (!_isJumping && _characterController.isGrounded && _isJumpPressed)
         {
+            //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
             _isJumping = true;
-            currentWalkMovement.y += _initialJumpVelocity;
-            currentRunMovement.y += _initialJumpVelocity;
+            currentWalkMovement.y = _initialJumpVelocity;
+            currentRunMovement.y = _initialJumpVelocity;
+            Debug.Log(string.Format("Perform jump, walk y velocity: {0}", currentWalkMovement.y));
         }
         //check input and grounded state, to set that it is not jumping.
         else if (_isJumping && _characterController.isGrounded && !_isJumpPressed) 
@@ -169,8 +176,8 @@ public class AnimationAndMovementController : MonoBehaviour
         }
         else 
         {
-            currentWalkMovement.y = -_gravityWhileAirborne;
-            currentRunMovement.y = -_gravityWhileAirborne;
+            currentWalkMovement.y -= _gravityWhileAirborne * Time.deltaTime;
+            currentRunMovement.y -= _gravityWhileAirborne * Time.deltaTime;
         } 
     }
 
@@ -184,9 +191,11 @@ public class AnimationAndMovementController : MonoBehaviour
         if (_isRunPressed)
         {
             _characterController.Move(currentRunMovement * Time.deltaTime);
+            //Debug.Log(string.Format("running, y velocity: {0}", currentWalkMovement.y));
         }
         else
         {
+            Debug.Log(string.Format("walking, y velocity: {0}", currentWalkMovement.y));
             _characterController.Move(currentWalkMovement * Time.deltaTime);
         }
         //Aplly gravity after the character has moved to the new location.

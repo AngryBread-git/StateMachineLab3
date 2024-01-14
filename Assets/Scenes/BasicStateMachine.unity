@@ -1162,6 +1162,7 @@ MonoBehaviour:
   _walkSpeed: 1.5
   _runSpeed: 3
   _gravityWhenGrounded: -0.05
+  _gravityFallMultiplier: 1.5
   _maxJumpHeight: 2.2
   _jumpTimeToApex: 0.25
   currentMovementInput: {x: 0, y: 0}
@@ -1170,6 +1171,7 @@ MonoBehaviour:
   _gravityWhileAirborne: 1
   _isMovementPressed: 0
   _isRunPressed: 0
+  _isFalling: 0
 --- !u!1 &1022783626
 GameObject:
   m_ObjectHideFlags: 0
@@ -4721,8 +4723,7 @@ Animator:
   m_StabilizeFeet: 0
   m_WarningMessage: "\nBinding warning: Some generic clip(s) animate transforms that
     are already bound by a Humanoid avatar. These transforms can only be changed
-    by Humanoid clips.\n\tTransform 'mixamorig:LeftLeg'\n\tFrom animation clip 'Running2Clone'\n\tFrom
-    animation clip 'Running2Clone'"
+    by Humanoid clips.\n\tTransform 'mixamorig:LeftLeg'\n\tFrom animation clip 'Running2Clone'"
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0

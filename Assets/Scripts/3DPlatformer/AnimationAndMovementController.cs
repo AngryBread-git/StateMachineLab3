@@ -19,6 +19,7 @@ public class AnimationAndMovementController : MonoBehaviour
 
     
     [SerializeField] private float _gravityWhenGrounded = 0.05f;
+    [SerializeField] private float _gravityFallMultiplier = 1.5f;
 
     [Space(1.0f)]
     [Header("Jump Variables")]
@@ -40,6 +41,7 @@ public class AnimationAndMovementController : MonoBehaviour
 
     [SerializeField] private bool _isMovementPressed;
     [SerializeField] private bool _isRunPressed;
+    [SerializeField] private bool _isFalling;
 
 
     void Awake()
@@ -71,7 +73,7 @@ public class AnimationAndMovementController : MonoBehaviour
     {
         //I'm using timeToApex which means I don't multiply by 2 in the numerator.
         _gravityWhileAirborne = (-1 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
-        _initialJumpVelocity = (_maxJumpHeight) / _jumpTimeToApex;
+        _initialJumpVelocity = (1 * _maxJumpHeight) / _jumpTimeToApex;
 
         Debug.Log(string.Format("Setup Vars, _gravityWhileAirborne: {0}", _gravityWhileAirborne));
         Debug.Log(string.Format("Setup Vars, _initialJumpVelocity: {0}", _initialJumpVelocity));
@@ -86,8 +88,7 @@ public class AnimationAndMovementController : MonoBehaviour
             //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
             _isJumping = true;
 
-            //the video multiplies these by 0.5f. but that seems very odd. means that maxjumpheight is incorrect.
-            //but with only _initialJumpVelocity the jump ends up twice as high as it should be.
+            //the video multiplies these by 0.5f. but that seems very odd. means that maxjumpheight becomes incorrect.
             currentWalkMovement.y = _initialJumpVelocity;
             currentRunMovement.y = _initialJumpVelocity;
             Debug.Log(string.Format("Perform jump, walk y velocity: {0}", currentWalkMovement.y));
@@ -174,12 +175,32 @@ public class AnimationAndMovementController : MonoBehaviour
 
     private void ApplyGravity() 
     {
+        //check if the character is falling
+        if (currentWalkMovement.y < -0.5f || !_isJumpPressed) 
+        {
+            _isFalling = true;
+            //Debug.Log(string.Format("ApplyGravity, _isFalling", _isFalling));
+            //Debug.Log(string.Format("Perform jump, walk y velocity: {0}", currentWalkMovement.y));
+        }
+
+
         if (_characterController.isGrounded)
         {
             currentWalkMovement.y = _gravityWhenGrounded;
             currentRunMovement.y = _gravityWhenGrounded;
+            _isFalling = false;
         }
-        else 
+        else if (_isFalling && !_characterController.isGrounded) 
+        {
+            float previousYVelocity = currentWalkMovement.y;
+            //Verlet
+            float nextYVelocity = (previousYVelocity + (currentWalkMovement.y + (_gravityWhileAirborne *_gravityFallMultiplier * Time.deltaTime))) * 0.5f;
+            currentWalkMovement.y = nextYVelocity;
+            currentRunMovement.y = nextYVelocity;
+        }
+
+        //?
+        else
         {
             float previousYVelocity = currentWalkMovement.y;
 

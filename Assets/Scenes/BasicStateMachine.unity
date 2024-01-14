@@ -1158,10 +1158,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8f2e817531b00d4a93b569241eb11d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rotationFactor: 0.6
+  _rotationFactor: 0.8
   _walkSpeed: 1.5
   _runSpeed: 3
-  _gravityWhenGrounded: -0.05
+  _gravityWhenGrounded: -0.025
   _gravityFallMultiplier: 1.5
   _maxJumpHeight: 2.2
   _jumpTimeToApex: 0.25

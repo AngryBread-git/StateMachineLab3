@@ -9,8 +9,10 @@ public class AnimationAndMovementController : MonoBehaviour
     private CharacterController _characterController;
     private Animator _animator;
 
+    //animation refs
     private int _isWalkingHash;
     private int _isRunningHash;
+    private int _isJumpingHash;
 
     [Header("Player Control Variables")]
     [SerializeField] private float _rotationFactor = 0.6f;
@@ -26,9 +28,12 @@ public class AnimationAndMovementController : MonoBehaviour
     [SerializeField] private float _maxJumpHeight = 1.0f;
     [SerializeField] private float _jumpTimeToApex = 0.25f;
 
+    //jumping properties.
     private bool _isJumpPressed;
     private float _initialJumpVelocity;
     private bool _isJumping;
+    private bool _isJumpAnimating;
+
 
     [Space(1.0f)]
     //input values
@@ -52,6 +57,7 @@ public class AnimationAndMovementController : MonoBehaviour
 
         _isWalkingHash = Animator.StringToHash("isWalking");
         _isRunningHash = Animator.StringToHash("isRunning");
+        _isJumpingHash = Animator.StringToHash("isJumping");
 
         platformerPlayerInput.CharacterControls.Move.started += context => {
             //Debug.Log(context.ReadValue<Vector2>());
@@ -85,8 +91,10 @@ public class AnimationAndMovementController : MonoBehaviour
         //check input and grounded state, to jump 
         if (!_isJumping && _characterController.isGrounded && _isJumpPressed)
         {
-            //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
+            _animator.SetBool(_isJumpingHash, true);
             _isJumping = true;
+            //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
+            _isJumpAnimating = true;
 
             //the video multiplies these by 0.5f. but that seems very odd. means that maxjumpheight becomes incorrect.
             currentWalkMovement.y = _initialJumpVelocity;
@@ -176,21 +184,32 @@ public class AnimationAndMovementController : MonoBehaviour
     private void ApplyGravity() 
     {
         //check if the character is falling
-        if (currentWalkMovement.y < -0.5f || !_isJumpPressed) 
+        //not a big fan of this, seems like falling gravity gets applied very late in the jump.
+        if (currentWalkMovement.y < -0.5f || !_isJumpPressed)
         {
             _isFalling = true;
             //Debug.Log(string.Format("ApplyGravity, _isFalling", _isFalling));
             //Debug.Log(string.Format("Perform jump, walk y velocity: {0}", currentWalkMovement.y));
         }
+        else 
+        {
+            _isFalling = false;
+        }
 
 
         if (_characterController.isGrounded)
         {
+            if (_isJumpAnimating) 
+            {
+                _animator.SetBool(_isJumpingHash, false);
+                _isJumpAnimating = false;
+            }
             currentWalkMovement.y = _gravityWhenGrounded;
             currentRunMovement.y = _gravityWhenGrounded;
             _isFalling = false;
+            
         }
-        else if (_isFalling && !_characterController.isGrounded) 
+        else if (_isFalling) 
         {
             float previousYVelocity = currentWalkMovement.y;
             //Verlet

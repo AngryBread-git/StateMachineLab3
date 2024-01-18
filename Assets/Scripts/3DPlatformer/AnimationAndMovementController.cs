@@ -48,11 +48,12 @@ public class AnimationAndMovementController : MonoBehaviour
     private Coroutine _currentResetJumpRoutine = null;
 
     [Space(1.0f)]
-    //input values
+    //input values. should have a fold-out
     [Header("Display for Debug Values")]
-    [SerializeField] private Vector2 currentMovementInput;
-    [SerializeField] private Vector3 currentWalkMovement;
-    [SerializeField] private Vector3 currentRunMovement;
+    [SerializeField] private Vector2 _currentMovementInput;
+    [SerializeField] private Vector3 _currentWalkMovement;
+    [SerializeField] private Vector3 _currentRunMovement;
+    [SerializeField] private Vector3 _appliedMovement;
 
     [SerializeField] private float _gravityWhileAirborne;
 
@@ -91,9 +92,9 @@ public class AnimationAndMovementController : MonoBehaviour
     private void SetUpJumpVariables() 
     {
         //calc all the jump velocities.
-        //I'm using timeToApex which means I don't multiply by 2 in the numerator.
-        _gravityWhileAirborne = (-1 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
-        _initialJumpVelocity = (1 * _maxJumpHeight) / _jumpTimeToApex;
+        
+        _gravityWhileAirborne = (-2 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
+        _initialJumpVelocity = -_gravityWhileAirborne * _jumpTimeToApex;
 
         float secondJumpGravity = (-1 * _secondJumpHeight) / Mathf.Pow(_secondJumpTimeToApex, 2);
         float secondJumpVelocity = (1 * _secondJumpHeight) / _secondJumpTimeToApex;
@@ -146,9 +147,9 @@ public class AnimationAndMovementController : MonoBehaviour
             //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
 
             //the video multiplies these by 0.5f. but that seems very odd. means that maxjumpheight becomes incorrect.
-            currentWalkMovement.y = _initialJumpVelocities[_jumpCount];
-            currentRunMovement.y = _initialJumpVelocities[_jumpCount];
-            Debug.Log(string.Format("Perform jump, walk y velocity: {0}", currentWalkMovement.y));
+            _currentWalkMovement.y = _initialJumpVelocities[_jumpCount];
+            _appliedMovement.y = _initialJumpVelocities[_jumpCount];
+            Debug.Log(string.Format("Perform jump, walk y velocity: {0}", _currentWalkMovement.y));
             
         }
         //check input and grounded state, to set that it is not jumping.
@@ -167,17 +168,17 @@ public class AnimationAndMovementController : MonoBehaviour
 
     void OnMovementInput(InputAction.CallbackContext context) 
     {
-        currentMovementInput = context.ReadValue<Vector2>();
+        _currentMovementInput = context.ReadValue<Vector2>();
         //set the walking speed. this will get fixed in the StateMachine version.
-        currentWalkMovement.x = currentMovementInput.x * _walkSpeed;
-        currentWalkMovement.z = currentMovementInput.y * _walkSpeed;
+        _currentWalkMovement.x = _currentMovementInput.x * _walkSpeed;
+        _currentWalkMovement.z = _currentMovementInput.y * _walkSpeed;
 
         //set the runnning speed. yeah, no shot this should be calculated every frame.
-        currentRunMovement.x = currentMovementInput.x * _runSpeed;
-        currentRunMovement.z = currentMovementInput.y * _runSpeed;
+        _currentRunMovement.x = _currentMovementInput.x * _runSpeed;
+        _currentRunMovement.z = _currentMovementInput.y * _runSpeed;
 
         //check if there is any input, and assign to bool.
-        _isMovementPressed = currentWalkMovement.x != 0 || currentMovementInput.y != 0;
+        _isMovementPressed = _currentWalkMovement.x != 0 || _currentMovementInput.y != 0;
     }
 
     void OnRun(InputAction.CallbackContext context) 
@@ -188,7 +189,7 @@ public class AnimationAndMovementController : MonoBehaviour
     private void OnJump(InputAction.CallbackContext context) 
     {
         _isJumpPressed = context.ReadValueAsButton();
-        Debug.Log(_isJumpPressed);
+        //Debug.Log(_isJumpPressed);
     }
 
     private void ChangeAnimation() 
@@ -224,9 +225,9 @@ public class AnimationAndMovementController : MonoBehaviour
     {
         Vector3 positionToLookAt;
         //the change in position hte character should point to.
-        positionToLookAt.x = currentWalkMovement.x;
+        positionToLookAt.x = _currentWalkMovement.x;
         positionToLookAt.y = 0;
-        positionToLookAt.z = currentWalkMovement.z;
+        positionToLookAt.z = _currentWalkMovement.z;
 
         Quaternion currentRotation = transform.rotation;
 
@@ -242,7 +243,7 @@ public class AnimationAndMovementController : MonoBehaviour
     {
         //check if the character is falling
         //not a big fan of this, seems like falling gravity gets applied very late in the jump.
-        if (currentWalkMovement.y < -0.5f || !_isJumpPressed)
+        if (_currentWalkMovement.y < -0.5f || !_isJumpPressed)
         {
             _isFalling = true;
             //Debug.Log(string.Format("ApplyGravity, _isFalling", _isFalling));
@@ -271,33 +272,28 @@ public class AnimationAndMovementController : MonoBehaviour
                 }
 
             }
-            currentWalkMovement.y = _gravityWhenGrounded;
-            currentRunMovement.y = _gravityWhenGrounded;
+            _currentWalkMovement.y = _gravityWhenGrounded;
+            _appliedMovement.y = _gravityWhenGrounded;
             _isFalling = false;
             
         }
         else if (_isFalling) 
         {
-            float previousYVelocity = currentWalkMovement.y;
+            float previousYVelocity = _currentWalkMovement.y;
             //Verlet
-            float nextYVelocity = (previousYVelocity + (currentWalkMovement.y + (_jumpGravityValues[_jumpCount] *_gravityFallMultiplier * Time.deltaTime))) * 0.5f;
-            currentWalkMovement.y = nextYVelocity;
-            currentRunMovement.y = nextYVelocity;
+            _currentWalkMovement.y = _currentWalkMovement.y + (_jumpGravityValues[_jumpCount] * _gravityFallMultiplier * Time.deltaTime);
+            _appliedMovement.y = Mathf.Max((previousYVelocity + _currentWalkMovement.y) * 0.5f, -20.0f);
+
         }
 
-        //?
         else
         {
-            float previousYVelocity = currentWalkMovement.y;
-
+            float previousYVelocity = _currentWalkMovement.y;
 
             //add the old velocity and the new velocity, average them and set that value.
             //called VelocityVerlet
-            //float newYVelocity = currentWalkMovement.y + (_gravityWhileAirborne * Time.deltaTime);
-            float nextYVelocity = (previousYVelocity + (currentWalkMovement.y + (_gravityWhileAirborne * Time.deltaTime))) * 0.5f;
-
-            currentWalkMovement.y = nextYVelocity;
-            currentRunMovement.y = nextYVelocity;
+            _currentWalkMovement.y = _currentWalkMovement.y + (_jumpGravityValues[_jumpCount] * Time.deltaTime);
+            _appliedMovement.y = (previousYVelocity + _currentWalkMovement.y) * 0.5f;
         } 
     }
 
@@ -310,14 +306,19 @@ public class AnimationAndMovementController : MonoBehaviour
 
         if (_isRunPressed)
         {
-            _characterController.Move(currentRunMovement * Time.deltaTime);
+            _appliedMovement.x = _currentRunMovement.x;
+            _appliedMovement.z = _currentRunMovement.z;
             //Debug.Log(string.Format("running, y velocity: {0}", currentWalkMovement.y));
         }
         else
         {
             //Debug.Log(string.Format("walking, y velocity: {0}", currentWalkMovement.y));
-            _characterController.Move(currentWalkMovement * Time.deltaTime);
+            _appliedMovement.x = _currentWalkMovement.x;
+            _appliedMovement.z = _currentWalkMovement.z;
         }
+
+        _characterController.Move(_appliedMovement * Time.deltaTime);
+
         //Aplly gravity after the character has moved to the new location.
         ApplyGravity();
         PerformJump();

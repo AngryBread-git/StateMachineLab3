@@ -1165,8 +1165,8 @@ MonoBehaviour:
   _gravityFallMultiplier: 1.5
   _maxJumpHeight: 2.2
   _secondJumpHeight: 3.3
-  _thirdJumpHeight: 4.4
-  _jumpTimeToApex: 0.25
+  _thirdJumpHeight: 3.8
+  _jumpTimeToApex: 0.669376
   _secondJumpTimeToApex: 0.3
   _thirdJumpTimeTimeToApex: 0.4
   _TimeToResetJumpCount: 0.45

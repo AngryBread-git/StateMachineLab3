@@ -13,9 +13,10 @@ public class AnimationAndMovementController : MonoBehaviour
     private int _isWalkingHash;
     private int _isRunningHash;
     private int _isJumpingHash;
+    private int _jumpCountHash;
 
     [Header("Player Control Variables")]
-    [SerializeField] private float _rotationFactor = 0.6f;
+    [Range(0, 1)] [SerializeField] private float _rotationFactor = 0.6f;
     [SerializeField] private float _walkSpeed = 1.5f;
     [SerializeField] private float _runSpeed = 3.0f;
 
@@ -26,14 +27,25 @@ public class AnimationAndMovementController : MonoBehaviour
     [Space(1.0f)]
     [Header("Jump Variables")]
     [SerializeField] private float _maxJumpHeight = 1.0f;
+    [SerializeField] private float _secondJumpHeight = 1.25f;
+    [SerializeField] private float _thirdJumpHeight = 1.5f;
+
     [SerializeField] private float _jumpTimeToApex = 0.25f;
+    [SerializeField] private float _secondJumpTimeToApex = 0.35f;
+    [SerializeField] private float _thirdJumpTimeTimeToApex = 0.45f;
+
+    [SerializeField] private float _TimeToResetJumpCount = 0.5f;
 
     //jumping properties.
     private bool _isJumpPressed;
     private float _initialJumpVelocity;
     private bool _isJumping;
     private bool _isJumpAnimating;
+    [SerializeField] private int _jumpCount = 0;
 
+    private Dictionary<int, float> _initialJumpVelocities = new Dictionary<int, float>();
+    private Dictionary<int, float> _jumpGravityValues = new Dictionary<int, float>();
+    private Coroutine _currentResetJumpRoutine = null;
 
     [Space(1.0f)]
     //input values
@@ -58,6 +70,7 @@ public class AnimationAndMovementController : MonoBehaviour
         _isWalkingHash = Animator.StringToHash("isWalking");
         _isRunningHash = Animator.StringToHash("isRunning");
         _isJumpingHash = Animator.StringToHash("isJumping");
+        _jumpCountHash = Animator.StringToHash("jumpCount");
 
         platformerPlayerInput.CharacterControls.Move.started += context => {
             //Debug.Log(context.ReadValue<Vector2>());
@@ -77,12 +90,37 @@ public class AnimationAndMovementController : MonoBehaviour
 
     private void SetUpJumpVariables() 
     {
+        //calc all the jump velocities.
         //I'm using timeToApex which means I don't multiply by 2 in the numerator.
         _gravityWhileAirborne = (-1 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
         _initialJumpVelocity = (1 * _maxJumpHeight) / _jumpTimeToApex;
 
+        float secondJumpGravity = (-1 * _secondJumpHeight) / Mathf.Pow(_secondJumpTimeToApex, 2);
+        float secondJumpVelocity = (1 * _secondJumpHeight) / _secondJumpTimeToApex;
+
+        float thirdJumpGravity = (-1 * _thirdJumpHeight) / Mathf.Pow(_thirdJumpTimeTimeToApex, 2);
+        float thirdJumpVelocity = (1 * _thirdJumpHeight) / _thirdJumpTimeTimeToApex;
+
+        //assign them to the dictionaries.
+        _initialJumpVelocities.Add(1, _initialJumpVelocity);
+        _initialJumpVelocities.Add(2, secondJumpVelocity);
+        _initialJumpVelocities.Add(3, thirdJumpVelocity);
+
+        _jumpGravityValues.Add(0, _gravityWhileAirborne);
+        _jumpGravityValues.Add(1, _gravityWhileAirborne);
+        _jumpGravityValues.Add(2, secondJumpGravity);
+        _jumpGravityValues.Add(3, thirdJumpGravity);
+
+
         Debug.Log(string.Format("Setup Vars, _gravityWhileAirborne: {0}", _gravityWhileAirborne));
         Debug.Log(string.Format("Setup Vars, _initialJumpVelocity: {0}", _initialJumpVelocity));
+
+        Debug.Log(string.Format("Setup Vars, secondJumpGravity: {0}", secondJumpGravity));
+        Debug.Log(string.Format("Setup Vars, secondJumpVelocity: {0}", secondJumpVelocity));
+
+        Debug.Log(string.Format("Setup Vars, thirdJumpGravity: {0}", thirdJumpGravity));
+        Debug.Log(string.Format("Setup Vars, thirdJumpVelocity: {0}", thirdJumpVelocity));
+
     }
 
     public void PerformJump() 
@@ -91,21 +129,40 @@ public class AnimationAndMovementController : MonoBehaviour
         //check input and grounded state, to jump 
         if (!_isJumping && _characterController.isGrounded && _isJumpPressed)
         {
+            if (_jumpCount < 3 && _currentResetJumpRoutine != null)
+            {
+                StopCoroutine(_currentResetJumpRoutine);
+            }
+
+
             _animator.SetBool(_isJumpingHash, true);
             _isJumping = true;
-            //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
             _isJumpAnimating = true;
+            _jumpCount += 1;
+            _animator.SetInteger(_jumpCountHash, _jumpCount);
+
+            Debug.Log(string.Format("Perform jump, _jumpCount: {0}", _jumpCount));
+
+            //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
 
             //the video multiplies these by 0.5f. but that seems very odd. means that maxjumpheight becomes incorrect.
-            currentWalkMovement.y = _initialJumpVelocity;
-            currentRunMovement.y = _initialJumpVelocity;
+            currentWalkMovement.y = _initialJumpVelocities[_jumpCount];
+            currentRunMovement.y = _initialJumpVelocities[_jumpCount];
             Debug.Log(string.Format("Perform jump, walk y velocity: {0}", currentWalkMovement.y));
+            
         }
         //check input and grounded state, to set that it is not jumping.
         else if (_isJumping && _characterController.isGrounded && !_isJumpPressed) 
         {
             _isJumping = false;
         }
+    }
+
+    private IEnumerator RestJumpCount() 
+    {
+        yield return new WaitForSeconds(_TimeToResetJumpCount);
+        _jumpCount = 0;
+        Debug.Log(string.Format("RestJumpCount: {0}", _jumpCount));
     }
 
     void OnMovementInput(InputAction.CallbackContext context) 
@@ -203,6 +260,16 @@ public class AnimationAndMovementController : MonoBehaviour
             {
                 _animator.SetBool(_isJumpingHash, false);
                 _isJumpAnimating = false;
+                //reset jump count after time
+                _currentResetJumpRoutine = StartCoroutine(RestJumpCount());
+
+                //reset jump count if the player has performed a triple jump
+                if (_jumpCount == 3) 
+                {
+                    _jumpCount = 0;
+                    _animator.SetInteger(_jumpCountHash, _jumpCount);
+                }
+
             }
             currentWalkMovement.y = _gravityWhenGrounded;
             currentRunMovement.y = _gravityWhenGrounded;
@@ -213,7 +280,7 @@ public class AnimationAndMovementController : MonoBehaviour
         {
             float previousYVelocity = currentWalkMovement.y;
             //Verlet
-            float nextYVelocity = (previousYVelocity + (currentWalkMovement.y + (_gravityWhileAirborne *_gravityFallMultiplier * Time.deltaTime))) * 0.5f;
+            float nextYVelocity = (previousYVelocity + (currentWalkMovement.y + (_jumpGravityValues[_jumpCount] *_gravityFallMultiplier * Time.deltaTime))) * 0.5f;
             currentWalkMovement.y = nextYVelocity;
             currentRunMovement.y = nextYVelocity;
         }

@@ -40,7 +40,7 @@ public class PlayerStateMachine : MonoBehaviour
     private bool _isJumpPressed;
     private float _initialJumpVelocity;
     private bool _isJumping;
-    private bool _isJumpAnimating;
+    private bool _requireNewJumpPress;
     [SerializeField] private int _jumpCount = 0;
 
     private Dictionary<int, float> _initialJumpVelocities = new Dictionary<int, float>();
@@ -50,6 +50,104 @@ public class PlayerStateMachine : MonoBehaviour
     //state vriables
     private PlayerBaseState _currentState;
     private PlayerStateFactory _states;
+
+    //Getters and setters
+
+    //This says that PlayerBaseState can both get and set the current state.
+    
+    #region GettersAndSetters
+    public PlayerBaseState CurrentState 
+    {
+        get { return _currentState; }
+        set { _currentState = value; }
+    }
+
+    public CharacterController CharacterController
+    {
+        get { return _characterController; }
+    }
+
+    public Animator Animator
+    {
+        get { return _animator; }
+    }
+
+    public Coroutine CurrentResetJumpRoutine
+    {
+        get { return _currentResetJumpRoutine; }
+        set { _currentResetJumpRoutine = value; }
+    }
+
+    public Dictionary<int, float> InitialJumpVelocities
+    {
+        get { return _initialJumpVelocities; }
+    }
+
+    public Dictionary<int, float> JumpGravityValues
+    {
+        get { return _jumpGravityValues; }
+    }
+
+    public float GravityFallMultipier 
+    {
+        get { return _gravityFallMultiplier; }
+    }
+
+    public int JumpCount 
+    {
+        get { return _jumpCount; }
+        set { _jumpCount = value; }
+    }
+
+    public int IsJumpingHash
+    {
+        get { return _isJumpingHash; }
+    }
+
+    public int JumpCountHash
+    {
+        get { return _jumpCountHash; }
+    }
+
+    public bool RequireNewJumpPress
+    {
+        get { return _requireNewJumpPress; }
+        set { _requireNewJumpPress = value; }
+    }
+    public bool IsJumping
+    {
+        set { _isJumping = value; }
+    }
+
+    public bool IsJumpPressed 
+    {
+        get { return _isJumpPressed; } 
+    }
+
+    public float TimeToResetJumpCount 
+    {
+        get { return _TimeToResetJumpCount; }
+    }
+
+    public float GravityWhileGrounded
+    {
+        get { return _gravityWhenGrounded; }
+    }
+
+    public float CurrentWalkMovementY
+    {
+        get { return _currentWalkMovement.y; }
+        set { _currentWalkMovement.y = value; }
+    }
+
+    public float AppliedMovementY
+    {
+        get { return _appliedMovement.y; }
+        set { _appliedMovement.y = value; }
+    }
+
+    #endregion GettersAndSetters
+
 
     [Space(1.0f)]
     //input values. should have a fold-out
@@ -72,10 +170,7 @@ public class PlayerStateMachine : MonoBehaviour
         _characterController = GetComponent<CharacterController>();
         _animator = GetComponentInChildren<Animator>();
 
-        //declare a new PS factory using this PS machine.
-        _states = new PlayerStateFactory(this);
-        _currentState = _states.Grounded();
-        _currentState.EnterState();
+
         Debug.Log(string.Format("Setup Vars, _currentState: {0}", _currentState));
 
         _isWalkingHash = Animator.StringToHash("isWalking");
@@ -96,6 +191,12 @@ public class PlayerStateMachine : MonoBehaviour
 
         };
         SetUpJumpVariables();
+
+        //declare a new PS factory using this PS machine.
+        _states = new PlayerStateFactory(this);
+        _currentState = _states.Grounded();
+        _currentState.EnterState();
+
     }
 
 
@@ -140,6 +241,7 @@ public class PlayerStateMachine : MonoBehaviour
     void Update()
     {
         RotateCharacter();
+        _currentState.UpdateState();
         _characterController.Move(_appliedMovement * Time.deltaTime);
     }
 
@@ -186,6 +288,7 @@ public class PlayerStateMachine : MonoBehaviour
     {
         _isJumpPressed = context.ReadValueAsButton();
         //Debug.Log(_isJumpPressed);
+        _requireNewJumpPress = false;
     }
 
     private void OnEnable()

@@ -1155,26 +1155,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 923289944}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f2e817531b00d4a93b569241eb11d0, type: 3}
+  m_Script: {fileID: 11500000, guid: e0b983bbaf23a5a4db91074c538210b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rotationFactor: 1
+  _rotationFactor: 0.6
   _walkSpeed: 1.5
   _runSpeed: 3
-  _gravityWhenGrounded: -0.025
+  _gravityWhenGrounded: 0.05
   _gravityFallMultiplier: 1.5
-  _maxJumpHeight: 2.2
-  _secondJumpHeight: 3.3
-  _thirdJumpHeight: 3.8
-  _jumpTimeToApex: 0.669376
-  _secondJumpTimeToApex: 0.3
-  _thirdJumpTimeTimeToApex: 0.4
-  _TimeToResetJumpCount: 0.45
+  _maxJumpHeight: 8
+  _secondJumpHeight: 1.25
+  _thirdJumpHeight: 1.5
+  _jumpTimeToApex: 0.25
+  _secondJumpTimeToApex: 0.35
+  _thirdJumpTimeTimeToApex: 0.45
+  _TimeToResetJumpCount: 0.5
   _jumpCount: 0
-  currentMovementInput: {x: 0, y: 0}
-  currentWalkMovement: {x: 0, y: 0, z: 0}
-  currentRunMovement: {x: 0, y: 0, z: 0}
-  _gravityWhileAirborne: 1
+  _currentMovementInput: {x: 0, y: 0}
+  _currentWalkMovement: {x: 0, y: 0, z: 0}
+  _currentRunMovement: {x: 0, y: 0, z: 0}
+  _appliedMovement: {x: 0, y: 0, z: 0}
+  _gravityWhileAirborne: 0
   _isMovementPressed: 0
   _isRunPressed: 0
   _isFalling: 0

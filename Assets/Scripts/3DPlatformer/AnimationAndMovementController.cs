@@ -159,7 +159,7 @@ public class AnimationAndMovementController : MonoBehaviour
         }
     }
 
-    private IEnumerator RestJumpCount() 
+    private IEnumerator ResetJumpCount() 
     {
         yield return new WaitForSeconds(_TimeToResetJumpCount);
         _jumpCount = 0;
@@ -262,7 +262,7 @@ public class AnimationAndMovementController : MonoBehaviour
                 _animator.SetBool(_isJumpingHash, false);
                 _isJumpAnimating = false;
                 //reset jump count after time
-                _currentResetJumpRoutine = StartCoroutine(RestJumpCount());
+                _currentResetJumpRoutine = StartCoroutine(ResetJumpCount());
 
                 //reset jump count if the player has performed a triple jump
                 if (_jumpCount == 3) 

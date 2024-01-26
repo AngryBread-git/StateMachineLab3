@@ -7,7 +7,14 @@ public class PlayerIdleState : PlayerBaseState
     public PlayerIdleState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory)
     : base(currentContext, playerStateFactory) { }
 
-    public override void EnterState() { }
+    public override void EnterState() 
+    {
+        Context.Animator.SetBool(Context.IsWalkingHash, false);
+        Context.Animator.SetBool(Context.IsRunningHash, false);
+
+        Context.AppliedMovementX = 0;
+        Context.AppliedMovementZ = 0;
+    }
 
     public override void UpdateState() 
     {
@@ -16,7 +23,17 @@ public class PlayerIdleState : PlayerBaseState
 
     public override void ExitState() { }
 
-    public override void CheckSwitchState() { }
+    public override void CheckSwitchState() 
+    {
+        if (Context.IsMovementPressed && Context.IsRunPressed)
+        {
+            SwitchState(Factory.Run());
+        }
+        else if (Context.IsMovementPressed) 
+        {
+            SwitchState(Factory.Walk());
+        }
+    }
 
     public override void InitializeSubState() { }
 }

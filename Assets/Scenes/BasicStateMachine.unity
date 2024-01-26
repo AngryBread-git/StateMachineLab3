@@ -1163,9 +1163,9 @@ MonoBehaviour:
   _runSpeed: 3
   _gravityWhenGrounded: 0.05
   _gravityFallMultiplier: 1.5
-  _maxJumpHeight: 8
-  _secondJumpHeight: 1.25
-  _thirdJumpHeight: 1.5
+  _maxJumpHeight: 4.2
+  _secondJumpHeight: 4.7
+  _thirdJumpHeight: 5.3
   _jumpTimeToApex: 0.25
   _secondJumpTimeToApex: 0.35
   _thirdJumpTimeTimeToApex: 0.45

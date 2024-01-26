@@ -8,16 +8,35 @@ public class PlayerWalkState : PlayerBaseState
     : base(currentContext, playerStateFactory) { }
 
 
-    public override void EnterState() { }
+    public override void EnterState() 
+    {
+        Context.Animator.SetBool(Context.IsWalkingHash, true);
+        Context.Animator.SetBool(Context.IsRunningHash, false);
+    }
 
     public override void UpdateState() 
     {
         CheckSwitchState();
+        //* walkspeed?
+        Context.AppliedMovementX = Context.CurrentMovementInput.x;
+        Context.AppliedMovementZ = Context.CurrentMovementInput.y;
+
     }
 
     public override void ExitState() { }
 
-    public override void CheckSwitchState() { }
+    public override void CheckSwitchState() 
+    {
+        if (!Context.IsMovementPressed)
+        {
+            SwitchState(Factory.Idle());
+        }
+        else if (Context.IsMovementPressed && Context.IsRunPressed)
+        {
+            SwitchState(Factory.Run());
+        }
+        
+    }
 
     public override void InitializeSubState() { }
 }

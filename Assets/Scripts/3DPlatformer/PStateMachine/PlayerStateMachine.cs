@@ -51,10 +51,26 @@ public class PlayerStateMachine : MonoBehaviour
     private PlayerBaseState _currentState;
     private PlayerStateFactory _states;
 
+
+
+    [Space(1.0f)]
+    //input values. should have a fold-out
+    [Header("Display for Debug Values")]
+    [SerializeField] private Vector2 _currentMovementInput;
+    [SerializeField] private Vector3 _currentWalkMovement;
+    [SerializeField] private Vector3 _currentRunMovement;
+    [SerializeField] private Vector3 _appliedMovement;
+
+    [SerializeField] private float _gravityWhileAirborne;
+
+    [SerializeField] private bool _isMovementPressed;
+    [SerializeField] private bool _isRunPressed;
+    [SerializeField] private bool _isFalling;
+
     //Getters and setters
 
     //This says that PlayerBaseState can both get and set the current state.
-    
+
     #region GettersAndSetters
     public PlayerBaseState CurrentState 
     {
@@ -97,6 +113,16 @@ public class PlayerStateMachine : MonoBehaviour
     {
         get { return _jumpCount; }
         set { _jumpCount = value; }
+    }
+
+    public int IsWalkingHash
+    {
+        get { return _isWalkingHash; }
+    }
+
+    public int IsRunningHash
+    {
+        get { return _isRunningHash; }
     }
 
     public int IsJumpingHash
@@ -146,22 +172,41 @@ public class PlayerStateMachine : MonoBehaviour
         set { _appliedMovement.y = value; }
     }
 
+    public float AppliedMovementX
+    {
+        get { return _appliedMovement.x; }
+        set { _appliedMovement.x = value; }
+    }
+
+    public float AppliedMovementZ
+    {
+        get { return _appliedMovement.z; }
+        set { _appliedMovement.z = value; }
+    }
+
+    public float RunSpeed 
+    {
+        get { return _runSpeed; }
+    }
+
+    public Vector2 CurrentMovementInput 
+    {
+        get {return _currentMovementInput;}
+    }
+
+    public bool IsMovementPressed 
+    {
+        get { return _isMovementPressed; }
+    }
+
+    public bool IsRunPressed
+    {
+        get { return _isRunPressed; }
+    }
+
     #endregion GettersAndSetters
 
 
-    [Space(1.0f)]
-    //input values. should have a fold-out
-    [Header("Display for Debug Values")]
-    [SerializeField] private Vector2 _currentMovementInput;
-    [SerializeField] private Vector3 _currentWalkMovement;
-    [SerializeField] private Vector3 _currentRunMovement;
-    [SerializeField] private Vector3 _appliedMovement;
-
-    [SerializeField] private float _gravityWhileAirborne;
-
-    [SerializeField] private bool _isMovementPressed;
-    [SerializeField] private bool _isRunPressed;
-    [SerializeField] private bool _isFalling;
 
 
     void Awake()
@@ -241,7 +286,8 @@ public class PlayerStateMachine : MonoBehaviour
     void Update()
     {
         RotateCharacter();
-        _currentState.UpdateState();
+        //run the current states update. and it's substates update.
+        _currentState.UpdateStates();
         _characterController.Move(_appliedMovement * Time.deltaTime);
     }
 

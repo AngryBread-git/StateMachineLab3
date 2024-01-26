@@ -5,12 +5,15 @@ using UnityEngine;
 public class PlayerGroundedState : PlayerBaseState
 {
     public PlayerGroundedState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory)
-    :base (currentContext, playerStateFactory){ }
+    :base (currentContext, playerStateFactory){
+        IsRootState = true;
+        InitializeSubState(); 
+    }
 
     public override void EnterState() 
     {
-        _context.CurrentWalkMovementY = _context.GravityWhileGrounded;
-        _context.AppliedMovementY = _context.GravityWhileGrounded;
+        Context.CurrentWalkMovementY = Context.GravityWhileGrounded;
+        Context.AppliedMovementY = Context.GravityWhileGrounded;
     }
 
     public override void UpdateState() 
@@ -22,11 +25,25 @@ public class PlayerGroundedState : PlayerBaseState
 
     public override void CheckSwitchState() 
     {
-        if (_context.IsJumpPressed && !_context.RequireNewJumpPress) 
+        if (Context.IsJumpPressed && !Context.RequireNewJumpPress) 
         {
-            SwitchState(_factory.Jump());
+            SwitchState(Factory.Jump());
         }
     }
 
-    public override void InitializeSubState() { }
+    public override void InitializeSubState() 
+    {
+        if (!Context.IsMovementPressed && !Context.IsRunPressed)
+        {
+            SetSubState(Factory.Idle());
+        }
+        else if (Context.IsMovementPressed && !Context.IsRunPressed) 
+        {
+            SetSubState(Factory.Walk());
+        }
+        else if (Context.IsMovementPressed && Context.IsRunPressed)
+        {
+            SetSubState(Factory.Run());
+        }
+    }
 }

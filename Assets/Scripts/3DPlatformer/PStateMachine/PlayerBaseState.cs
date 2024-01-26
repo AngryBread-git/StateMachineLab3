@@ -1,8 +1,31 @@
 public abstract class PlayerBaseState
 {
     //all concrete states inherit these values.
-    protected PlayerStateMachine _context;
-    protected PlayerStateFactory _factory;
+    private bool _isRootState = false;
+    private PlayerStateMachine _context;
+    private PlayerStateFactory _factory;
+
+    private PlayerBaseState _currentSubState;
+    private PlayerBaseState _currentSuperState;
+
+    #region GettersAndSetters
+
+    protected bool IsRootState
+    {
+        set { _isRootState = value; }
+    }
+
+    protected PlayerStateMachine Context
+    {
+        get { return _context; }
+    }
+
+    protected PlayerStateFactory Factory
+    {
+        get { return _factory; }
+    }
+
+    #endregion GettersAndSetters
 
     public PlayerBaseState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory) 
     {
@@ -20,7 +43,23 @@ public abstract class PlayerBaseState
 
     public abstract void InitializeSubState();
 
-    void UpdateStates() { }
+    public void UpdateStates() 
+    {
+        UpdateState();
+        if (_currentSubState != null) 
+        {
+            _currentSubState.UpdateStates();
+        }
+    }
+
+    public void ExitStates()
+    {
+        ExitState();
+        if (_currentSubState != null)
+        {
+            _currentSubState.ExitStates();
+        }
+    }
 
     protected void SwitchState(PlayerBaseState stateToEnter) 
     {
@@ -30,11 +69,28 @@ public abstract class PlayerBaseState
         //enter the new state
         stateToEnter.EnterState();
 
-        _context.CurrentState = stateToEnter;
+        if (_isRootState)
+        {
+            //switch current state.
+            _context.CurrentState = stateToEnter;
+        }
+        else if (_currentSuperState != null) 
+        {
+            //transfer the current substate to the new superstate
+            _currentSuperState.SetSubState(stateToEnter);
+        }
+        
     }
 
-    void SetSuperState() { }
+    protected void SetSuperState(PlayerBaseState superState) 
+    {
+        _currentSuperState = superState;
+    }
 
-    void SetSubState() { }
+    protected void SetSubState(PlayerBaseState subState) 
+    {
+        _currentSubState = subState;
+        subState.SetSuperState(this);
+    }
 
 }

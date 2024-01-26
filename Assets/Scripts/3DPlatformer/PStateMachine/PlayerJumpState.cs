@@ -7,12 +7,15 @@ public class PlayerJumpState : PlayerBaseState
     IEnumerator IResetJumpRoutine(float timeToResetJumpCount) 
     {
         yield return new WaitForSeconds(timeToResetJumpCount);
-        _context.JumpCount = 0;
+        Context.JumpCount = 0;
 
     }
 
     public PlayerJumpState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory)
-    : base(currentContext, playerStateFactory) { }
+    : base(currentContext, playerStateFactory) {
+        IsRootState = true;
+        InitializeSubState();
+    }
 
     public override void EnterState() 
     {
@@ -27,52 +30,66 @@ public class PlayerJumpState : PlayerBaseState
 
     public override void ExitState() 
     {
-        _context.Animator.SetBool(_context.IsJumpingHash, false);
-        if(_context.IsJumpPressed)
-        { 
-            _context.RequireNewJumpPress = true;
+        Context.Animator.SetBool(Context.IsJumpingHash, false);
+        if(Context.IsJumpPressed)
+        {
+            Context.RequireNewJumpPress = true;
         }
         //reset jump count after time
-        _context.CurrentResetJumpRoutine = _context.StartCoroutine(IResetJumpRoutine(_context.TimeToResetJumpCount));
+        Context.CurrentResetJumpRoutine = Context.StartCoroutine(IResetJumpRoutine(Context.TimeToResetJumpCount));
 
         //reset jump count if the player has performed a triple jump
-        if (_context.JumpCount == 3)
+        if (Context.JumpCount == 3)
         {
-            _context.JumpCount = 0;
-            _context.Animator.SetInteger(_context.JumpCountHash, _context.JumpCount);
+            Context.JumpCount = 0;
+            Context.Animator.SetInteger(Context.JumpCountHash, Context.JumpCount);
         }
     }
 
     public override void CheckSwitchState() 
     {
-        if (_context.CharacterController.isGrounded) 
+        if (Context.CharacterController.isGrounded) 
         {
-            SwitchState(_factory.Grounded());
+            SwitchState(Factory.Grounded());
         }
     }
 
-    public override void InitializeSubState() { }
+    public override void InitializeSubState() 
+    {
+        if (!Context.IsMovementPressed && !Context.IsRunPressed)
+        {
+            SetSubState(Factory.Idle());
+        }
+        else if (Context.IsMovementPressed && !Context.IsRunPressed)
+        {
+            SetSubState(Factory.Walk());
+        }
+        else if (Context.IsMovementPressed && Context.IsRunPressed)
+        {
+            SetSubState(Factory.Run());
+        }
+    }
 
     void PerformJump() 
     {
-        if (_context.JumpCount < 3 && _context.CurrentResetJumpRoutine != null)
+        if (Context.JumpCount < 3 && Context.CurrentResetJumpRoutine != null)
         {
-            _context.StopCoroutine(_context.CurrentResetJumpRoutine);
+            Context.StopCoroutine(Context.CurrentResetJumpRoutine);
         }
 
-        _context.Animator.SetBool(_context.IsJumpingHash, true);
-        _context.IsJumping = true;
-        _context.JumpCount += 1;
-        _context.Animator.SetInteger(_context.JumpCountHash, _context.JumpCount);
+        Context.Animator.SetBool(Context.IsJumpingHash, true);
+        Context.IsJumping = true;
+        Context.JumpCount += 1;
+        Context.Animator.SetInteger(Context.JumpCountHash, Context.JumpCount);
 
-        Debug.Log(string.Format("Perform jump, _context.JumpCount: {0}", _context.JumpCount));
+        Debug.Log(string.Format("Perform jump, _context.JumpCount: {0}", Context.JumpCount));
 
         //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
 
         //the video multiplies these by 0.5f. but that seems very odd. means that maxjumpheight becomes incorrect.
-        _context.CurrentWalkMovementY = _context.InitialJumpVelocities[_context.JumpCount];
-        _context.AppliedMovementY = _context.InitialJumpVelocities[_context.JumpCount];
-        Debug.Log(string.Format("Perform jump, _context.CurrentWalkMovementY velocity: {0}", _context.CurrentWalkMovementY));
+        Context.CurrentWalkMovementY = Context.InitialJumpVelocities[Context.JumpCount];
+        Context.AppliedMovementY = Context.InitialJumpVelocities[Context.JumpCount];
+        Debug.Log(string.Format("Perform jump, _context.CurrentWalkMovementY velocity: {0}", Context.CurrentWalkMovementY));
 
     }
 
@@ -82,7 +99,7 @@ public class PlayerJumpState : PlayerBaseState
 
         //check if the character is falling
         //not a big fan of this, seems like falling gravity gets applied very late in the jump.
-        if (_context.CurrentWalkMovementY < -0.5f || !_context.IsJumpPressed)
+        if (Context.CurrentWalkMovementY < -0.5f || !Context.IsJumpPressed)
         {
             isFalling = true;
             //Debug.Log(string.Format("ApplyGravity, _isFalling", _isFalling));
@@ -91,21 +108,21 @@ public class PlayerJumpState : PlayerBaseState
 
         if (isFalling)
         {
-            float previousYVelocity = _context.CurrentWalkMovementY;
+            float previousYVelocity = Context.CurrentWalkMovementY;
             //Verlet
-            _context.CurrentWalkMovementY = _context.CurrentWalkMovementY + (_context.JumpGravityValues[_context.JumpCount] * _context.GravityFallMultipier * Time.deltaTime);
-            _context.AppliedMovementY = Mathf.Max((previousYVelocity + _context.CurrentWalkMovementY) * 0.5f, -20.0f);
+            Context.CurrentWalkMovementY = Context.CurrentWalkMovementY + (Context.JumpGravityValues[Context.JumpCount] * Context.GravityFallMultipier * Time.deltaTime);
+            Context.AppliedMovementY = Mathf.Max((previousYVelocity + Context.CurrentWalkMovementY) * 0.5f, -20.0f);
 
         }
 
         else
         {
-            float previousYVelocity = _context.CurrentWalkMovementY;
+            float previousYVelocity = Context.CurrentWalkMovementY;
 
             //add the old velocity and the new velocity, average them and set that value.
             //called VelocityVerlet
-            _context.CurrentWalkMovementY = _context.CurrentWalkMovementY + (_context.JumpGravityValues[_context.JumpCount] * Time.deltaTime);
-            _context.AppliedMovementY = (previousYVelocity + _context.CurrentWalkMovementY) * 0.5f;
+            Context.CurrentWalkMovementY = Context.CurrentWalkMovementY + (Context.JumpGravityValues[Context.JumpCount] * Time.deltaTime);
+            Context.AppliedMovementY = (previousYVelocity + Context.CurrentWalkMovementY) * 0.5f;
         }
     }
 

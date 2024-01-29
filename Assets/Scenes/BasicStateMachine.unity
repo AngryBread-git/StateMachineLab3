@@ -1161,8 +1161,10 @@ MonoBehaviour:
   _rotationFactor: 0.6
   _walkSpeed: 1.5
   _runSpeed: 3
-  _gravityWhenGrounded: 0.05
-  _gravityFallMultiplier: 1.5
+  _gravityWhenAirborne: -9.82
+  _gravityWhenGrounded: -0.05
+  _gravityFallMultiplier: 1.2
+  _maxFallSpeed: -30
   _maxJumpHeight: 4.2
   _secondJumpHeight: 4.7
   _thirdJumpHeight: 5.3
@@ -1175,7 +1177,7 @@ MonoBehaviour:
   _currentWalkMovement: {x: 0, y: 0, z: 0}
   _currentRunMovement: {x: 0, y: 0, z: 0}
   _appliedMovement: {x: 0, y: 0, z: 0}
-  _gravityWhileAirborne: 0
+  _firstJumpGravity: 0
   _isMovementPressed: 0
   _isRunPressed: 0
   _isFalling: 0

@@ -20,9 +20,10 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private float _walkSpeed = 1.5f;
     [SerializeField] private float _runSpeed = 3.0f;
 
-
-    [SerializeField] private float _gravityWhenGrounded = 0.05f;
+    [SerializeField] private float _gravity = -9.82f;
     [SerializeField] private float _gravityFallMultiplier = 1.5f;
+    [SerializeField] private float _maxFallSpeed = -20.0f;
+
 
     [Space(1.0f)]
     [Header("Jump Variables")]
@@ -38,7 +39,7 @@ public class PlayerStateMachine : MonoBehaviour
 
     //jumping properties.
     private bool _isJumpPressed;
-    private float _initialJumpVelocity;
+    private float _firstJumpVelocity;
     private bool _isJumping;
     private bool _requireNewJumpPress;
     [SerializeField] private int _jumpCount = 0;
@@ -61,7 +62,7 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private Vector3 _currentRunMovement;
     [SerializeField] private Vector3 _appliedMovement;
 
-    [SerializeField] private float _gravityWhileAirborne;
+    [SerializeField] private float _firstJumpGravity;
 
     [SerializeField] private bool _isMovementPressed;
     [SerializeField] private bool _isRunPressed;
@@ -107,6 +108,11 @@ public class PlayerStateMachine : MonoBehaviour
     public float GravityFallMultipier 
     {
         get { return _gravityFallMultiplier; }
+    }
+
+    public float MaxFallSpeed
+    {
+        get { return _maxFallSpeed; }
     }
 
     public int JumpCount 
@@ -155,9 +161,9 @@ public class PlayerStateMachine : MonoBehaviour
         get { return _TimeToResetJumpCount; }
     }
 
-    public float GravityWhileGrounded
+    public float Gravity
     {
-        get { return _gravityWhenGrounded; }
+        get { return _gravity; }
     }
 
     public float CurrentWalkMovementY
@@ -207,7 +213,10 @@ public class PlayerStateMachine : MonoBehaviour
     #endregion GettersAndSetters
 
 
-
+    private void Start()
+    {
+        _characterController.Move(_appliedMovement * Time.deltaTime);
+    }
 
     void Awake()
     {
@@ -249,35 +258,35 @@ public class PlayerStateMachine : MonoBehaviour
     {
         //calc all the jump velocities.
 
-        _gravityWhileAirborne = (-2 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
-        _initialJumpVelocity = -_gravityWhileAirborne * _jumpTimeToApex;
+        _firstJumpGravity = (-2 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
+        _firstJumpVelocity = -_firstJumpGravity * _jumpTimeToApex;
 
-        float secondJumpGravity = (-1 * _secondJumpHeight) / Mathf.Pow(_secondJumpTimeToApex, 2);
-        float secondJumpVelocity = (1 * _secondJumpHeight) / _secondJumpTimeToApex;
+        float secondJumpGravity = (-2 * _secondJumpHeight) / Mathf.Pow(_secondJumpTimeToApex, 2);
+        float secondJumpVelocity = (2 * _secondJumpHeight) / _secondJumpTimeToApex;
 
-        float thirdJumpGravity = (-1 * _thirdJumpHeight) / Mathf.Pow(_thirdJumpTimeTimeToApex, 2);
-        float thirdJumpVelocity = (1 * _thirdJumpHeight) / _thirdJumpTimeTimeToApex;
+        float thirdJumpGravity = (-2 * _thirdJumpHeight) / Mathf.Pow(_thirdJumpTimeTimeToApex, 2);
+        float thirdJumpVelocity = (2 * _thirdJumpHeight) / _thirdJumpTimeTimeToApex;
 
         //assign them to the dictionaries.
-        _initialJumpVelocities.Add(1, _initialJumpVelocity);
+        _initialJumpVelocities.Add(1, _firstJumpVelocity);
         _initialJumpVelocities.Add(2, secondJumpVelocity);
         _initialJumpVelocities.Add(3, thirdJumpVelocity);
 
-        _jumpGravityValues.Add(0, _gravityWhileAirborne);
-        _jumpGravityValues.Add(1, _gravityWhileAirborne);
+        _jumpGravityValues.Add(0, _firstJumpGravity);
+        _jumpGravityValues.Add(1, _firstJumpGravity);
         _jumpGravityValues.Add(2, secondJumpGravity);
         _jumpGravityValues.Add(3, thirdJumpGravity);
 
 
-        /*Debug.Log(string.Format("Setup Vars, _gravityWhileAirborne: {0}", _gravityWhileAirborne));
-        Debug.Log(string.Format("Setup Vars, _initialJumpVelocity: {0}", _initialJumpVelocity));
+        //Debug.Log(string.Format("Setup Vars, _gravityWhileAirborne: {0}", _gravityWhileAirborne));
+        Debug.Log(string.Format("Setup Vars, _initialJumpVelocity: {0}", _firstJumpVelocity));
 
-        Debug.Log(string.Format("Setup Vars, secondJumpGravity: {0}", secondJumpGravity));
+        //Debug.Log(string.Format("Setup Vars, secondJumpGravity: {0}", secondJumpGravity));
         Debug.Log(string.Format("Setup Vars, secondJumpVelocity: {0}", secondJumpVelocity));
 
-        Debug.Log(string.Format("Setup Vars, thirdJumpGravity: {0}", thirdJumpGravity));
+        //Debug.Log(string.Format("Setup Vars, thirdJumpGravity: {0}", thirdJumpGravity));
         Debug.Log(string.Format("Setup Vars, thirdJumpVelocity: {0}", thirdJumpVelocity));
-        */
+        
     }
 
 

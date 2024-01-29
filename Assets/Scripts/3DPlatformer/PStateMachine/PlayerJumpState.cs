@@ -24,8 +24,10 @@ public class PlayerJumpState : PlayerBaseState
 
     public override void UpdateState() 
     {
-        CheckSwitchState();
+
         ApplyGravity();
+
+        CheckSwitchState();
     }
 
     public override void ExitState() 
@@ -89,11 +91,11 @@ public class PlayerJumpState : PlayerBaseState
         //the video multiplies these by 0.5f. but that seems very odd. means that maxjumpheight becomes incorrect.
         Context.CurrentWalkMovementY = Context.InitialJumpVelocities[Context.JumpCount];
         Context.AppliedMovementY = Context.InitialJumpVelocities[Context.JumpCount];
-        Debug.Log(string.Format("Perform jump, _context.CurrentWalkMovementY velocity: {0}", Context.CurrentWalkMovementY));
+        //Debug.Log(string.Format("Perform jump, _context.CurrentWalkMovementY velocity: {0}", Context.CurrentWalkMovementY));
 
     }
 
-    void ApplyGravity() 
+    public void ApplyGravity() 
     {
         bool isFalling = false;
 

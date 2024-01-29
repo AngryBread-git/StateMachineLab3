@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public abstract class PlayerBaseState
 {
     //all concrete states inherit these values.
@@ -64,9 +66,12 @@ public abstract class PlayerBaseState
     protected void SwitchState(PlayerBaseState stateToEnter) 
     {
         //exit current state
+        //Debug.Log(string.Format("BaseState. exiting {0}", _currentSubState.ToString()));
         ExitState();
 
         //enter the new state
+        Debug.Log(string.Format("BaseState. entering {0}", stateToEnter));
+
         stateToEnter.EnterState();
 
         if (_isRootState)

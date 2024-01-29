@@ -2,6 +2,8 @@ public class PlayerStateFactory
 {
     PlayerStateMachine _context;
 
+    //dictionary for state
+
     public PlayerStateFactory(PlayerStateMachine currentContext) 
     {
         _context = currentContext;
@@ -30,6 +32,11 @@ public class PlayerStateFactory
     public PlayerBaseState Grounded()
     {
         return new PlayerGroundedState(_context, this);
+    }
+
+    public PlayerBaseState Fall()
+    {
+        return new PlayerFallState(_context, this);
     }
 
 }

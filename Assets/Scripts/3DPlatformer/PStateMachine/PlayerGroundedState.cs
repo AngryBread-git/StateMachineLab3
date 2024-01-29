@@ -10,10 +10,21 @@ public class PlayerGroundedState : PlayerBaseState
         InitializeSubState(); 
     }
 
+    public void ApplyGravity() 
+    {
+        Context.CurrentWalkMovementY = Context.Gravity;
+
+        //Debug.Log(string.Format("GroundedState. CurrentWalkMovementY set to {0}", Context.CurrentWalkMovementY));
+
+        Context.AppliedMovementY = Context.Gravity;
+
+        //Debug.Log(string.Format("GroundedState. AppliedMovementY", Context.AppliedMovementY));
+    }
+
     public override void EnterState() 
     {
-        Context.CurrentWalkMovementY = Context.GravityWhileGrounded;
-        Context.AppliedMovementY = Context.GravityWhileGrounded;
+        //Debug.Log(string.Format("Enter State: GroundState"));
+        ApplyGravity();
     }
 
     public override void UpdateState() 
@@ -21,14 +32,22 @@ public class PlayerGroundedState : PlayerBaseState
         CheckSwitchState();
     }
 
-    public override void ExitState() { }
+    public override void ExitState() 
+    {
+        //Debug.Log(string.Format("Exit State: GroundState"));
+    }
 
     public override void CheckSwitchState() 
     {
-        if (Context.IsJumpPressed && !Context.RequireNewJumpPress) 
+        if (Context.IsJumpPressed && !Context.RequireNewJumpPress)
         {
             SwitchState(Factory.Jump());
         }
+        else if (!Context.CharacterController.isGrounded) 
+        {
+            SwitchState(Factory.Fall());
+        }
+
     }
 
     public override void InitializeSubState() 

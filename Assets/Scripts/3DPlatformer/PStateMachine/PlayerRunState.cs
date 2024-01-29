@@ -15,10 +15,10 @@ public class PlayerRunState : PlayerBaseState
 
     public override void UpdateState() 
     {
-        CheckSwitchState();
         //_context.AppliedMovementX = _context.RunSpeed
         Context.AppliedMovementX = Context.CurrentMovementInput.x * Context.RunSpeed;
         Context.AppliedMovementZ = Context.CurrentMovementInput.y * Context.RunSpeed;
+        CheckSwitchState();
     }
 
     public override void ExitState() { }

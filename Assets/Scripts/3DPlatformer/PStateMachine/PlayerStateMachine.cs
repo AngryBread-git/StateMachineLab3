@@ -14,6 +14,7 @@ public class PlayerStateMachine : MonoBehaviour
     private int _isRunningHash;
     private int _isJumpingHash;
     private int _jumpCountHash;
+    private int _isFallingHash;
 
     [Header("Player Control Variables")]
     [Range(0, 1)] [SerializeField] private float _rotationFactor = 0.6f;
@@ -136,6 +137,11 @@ public class PlayerStateMachine : MonoBehaviour
         get { return _isJumpingHash; }
     }
 
+    public int IsFallingHash
+    {
+        get { return _isFallingHash; }
+    }
+
     public int JumpCountHash
     {
         get { return _jumpCountHash; }
@@ -231,6 +237,7 @@ public class PlayerStateMachine : MonoBehaviour
         _isRunningHash = Animator.StringToHash("isRunning");
         _isJumpingHash = Animator.StringToHash("isJumping");
         _jumpCountHash = Animator.StringToHash("jumpCount");
+        _isFallingHash = Animator.StringToHash("isFalling");
 
         platformerPlayerInput.CharacterControls.Move.started += context => {
             //Debug.Log(context.ReadValue<Vector2>());

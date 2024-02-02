@@ -4,12 +4,7 @@ using UnityEngine;
 
 public class PlayerJumpState : PlayerBaseState
 {
-    IEnumerator IResetJumpRoutine(float timeToResetJumpCount) 
-    {
-        yield return new WaitForSeconds(timeToResetJumpCount);
-        Context.JumpCount = 0;
 
-    }
 
     public PlayerJumpState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory)
     : base(currentContext, playerStateFactory) {
@@ -70,6 +65,13 @@ public class PlayerJumpState : PlayerBaseState
         {
             SetSubState(Factory.Run());
         }
+    }
+
+    IEnumerator IResetJumpRoutine(float timeToResetJumpCount)
+    {
+        yield return new WaitForSeconds(timeToResetJumpCount);
+        Context.JumpCount = 0;
+
     }
 
     void PerformJump() 

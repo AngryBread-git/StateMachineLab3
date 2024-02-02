@@ -8,6 +8,8 @@ public class PlayerStateMachine : MonoBehaviour
     public PlatformerPlayerInputs platformerPlayerInput;
     private CharacterController _characterController;
     private Animator _animator;
+    private Camera _playerCamera;
+
 
     //animation refs
     private int _isWalkingHash;
@@ -17,7 +19,7 @@ public class PlayerStateMachine : MonoBehaviour
     private int _isFallingHash;
 
     [Header("Player Control Variables")]
-    [Range(0, 1)] [SerializeField] private float _rotationFactor = 0.6f;
+    [Range(4, 8)] [SerializeField] private float _rotationFactor = 0.6f;
     [SerializeField] private float _walkSpeed = 1.5f;
     [SerializeField] private float _runSpeed = 3.0f;
 
@@ -28,15 +30,17 @@ public class PlayerStateMachine : MonoBehaviour
 
     [Space(1.0f)]
     [Header("Jump Variables")]
-    [SerializeField] private float _maxJumpHeight = 1.0f;
+    [SerializeField] private float _firstJumpHeight = 1.0f;
     [SerializeField] private float _secondJumpHeight = 1.25f;
     [SerializeField] private float _thirdJumpHeight = 1.5f;
 
-    [SerializeField] private float _jumpTimeToApex = 0.25f;
+    [SerializeField] private float _firstjumpTimeToApex = 0.25f;
     [SerializeField] private float _secondJumpTimeToApex = 0.35f;
     [SerializeField] private float _thirdJumpTimeTimeToApex = 0.45f;
 
-    [SerializeField] private float _TimeToResetJumpCount = 0.5f;
+    [SerializeField] private float _timeToResetJumpCount = 0.5f;
+    [SerializeField] private float _coyoteTime = 0.5f;
+    private Coroutine _currentCoyoteTimeRoutine = null;
 
     //jumping properties.
     private bool _isJumpPressed;
@@ -62,12 +66,15 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private Vector3 _currentWalkMovement;
     [SerializeField] private Vector3 _currentRunMovement;
     [SerializeField] private Vector3 _appliedMovement;
+    private Vector3 _cameraRelativeAppliedMovement;
 
     [SerializeField] private float _firstJumpGravity;
 
     [SerializeField] private bool _isMovementPressed;
     [SerializeField] private bool _isRunPressed;
     [SerializeField] private bool _isFalling;
+
+    float EPSILON_SQR = 0.0001f;
 
     //Getters and setters
 
@@ -94,6 +101,12 @@ public class PlayerStateMachine : MonoBehaviour
     {
         get { return _currentResetJumpRoutine; }
         set { _currentResetJumpRoutine = value; }
+    }
+
+    public Coroutine CurrentCoyoteTimeRoutine
+    {
+        get { return _currentCoyoteTimeRoutine; }
+        set { _currentCoyoteTimeRoutine = value; }
     }
 
     public Dictionary<int, float> InitialJumpVelocities
@@ -164,7 +177,12 @@ public class PlayerStateMachine : MonoBehaviour
 
     public float TimeToResetJumpCount 
     {
-        get { return _TimeToResetJumpCount; }
+        get { return _timeToResetJumpCount; }
+    }
+
+    public float CoyoteTime
+    {
+        get { return _coyoteTime; }
     }
 
     public float Gravity
@@ -229,7 +247,7 @@ public class PlayerStateMachine : MonoBehaviour
         platformerPlayerInput = new PlatformerPlayerInputs();
         _characterController = GetComponent<CharacterController>();
         _animator = GetComponentInChildren<Animator>();
-
+        _playerCamera = Camera.main;
 
         Debug.Log(string.Format("Setup Vars, _currentState: {0}", _currentState));
 
@@ -265,8 +283,8 @@ public class PlayerStateMachine : MonoBehaviour
     {
         //calc all the jump velocities.
 
-        _firstJumpGravity = (-2 * _maxJumpHeight) / Mathf.Pow(_jumpTimeToApex, 2);
-        _firstJumpVelocity = -_firstJumpGravity * _jumpTimeToApex;
+        _firstJumpGravity = (-2 * _firstJumpHeight) / Mathf.Pow(_firstjumpTimeToApex, 2);
+        _firstJumpVelocity = -_firstJumpGravity * _firstjumpTimeToApex;
 
         float secondJumpGravity = (-2 * _secondJumpHeight) / Mathf.Pow(_secondJumpTimeToApex, 2);
         float secondJumpVelocity = (2 * _secondJumpHeight) / _secondJumpTimeToApex;
@@ -304,24 +322,56 @@ public class PlayerStateMachine : MonoBehaviour
         RotateCharacter();
         //run the current states update. and it's substates update.
         _currentState.UpdateStates();
-        _characterController.Move(_appliedMovement * Time.deltaTime);
+
+
+        _cameraRelativeAppliedMovement = ConverToCameraSpace(_appliedMovement);
+        _characterController.Move(_cameraRelativeAppliedMovement * Time.deltaTime);
     }
 
+    Vector3 ConverToCameraSpace(Vector3 vectorToRotate) 
+    {
+        float currentYValue = vectorToRotate.y;
+
+        Vector3 cameraForward = _playerCamera.transform.forward;
+        Vector3 cameraRight = _playerCamera.transform.right;
+
+        //remove y values to ignore upward/downward angles.
+        cameraForward.y = 0;
+        cameraRight.y = 0;
+
+        //re-normalize so they have a value of 1.
+        cameraForward = cameraForward.normalized;
+        cameraRight = cameraRight.normalized;
+
+        //rotate the x and z values to camera space.
+        Vector3 cameraForwardZProduct = vectorToRotate.z * cameraForward;
+        Vector3 cameraRightZProduct = vectorToRotate.x * cameraRight;
+
+        Vector3 result = cameraForwardZProduct + cameraRightZProduct;
+        result.y = currentYValue;
+
+        //return the product of the rotated Vector3s and the saved Y-value
+        return result;
+    }
 
     private void RotateCharacter()
     {
-        Vector3 positionToLookAt;
-        //the change in position hte character should point to.
-        positionToLookAt.x = _currentWalkMovement.x;
+        //the change in position the character should point to.
+        Vector3 positionToLookAt = _cameraRelativeAppliedMovement;
         positionToLookAt.y = 0;
-        positionToLookAt.z = _currentWalkMovement.z;
+        positionToLookAt.Normalize();
 
         Quaternion currentRotation = transform.rotation;
 
         if (_isMovementPressed)
         {
+            if (positionToLookAt.sqrMagnitude <= 0) 
+            {
+                return;
+            }
+          
             Quaternion targetRotation = Quaternion.LookRotation(positionToLookAt);
-            transform.rotation = Quaternion.Slerp(currentRotation, targetRotation, _rotationFactor * Time.deltaTime);
+            transform.rotation = Quaternion.Lerp(currentRotation, targetRotation, _rotationFactor * Time.deltaTime);
         }
 
     }

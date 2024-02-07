@@ -8,13 +8,14 @@ public class PlayerFallState : PlayerBaseState, IRootState
     : base(currentContext, playerStateFactory)
     {
         IsRootState = true;
-        InitializeSubState();
+        
     }
     float _previousYVelocity;
     float _maxFallSpeed;
 
     public override void EnterState()
     {
+        InitializeSubState();
         //Debug.Log(string.Format("Enter State: FallState"));
         _maxFallSpeed = Context.MaxFallSpeed;
         Context.Animator.SetBool(Context.IsFallingHash, true);

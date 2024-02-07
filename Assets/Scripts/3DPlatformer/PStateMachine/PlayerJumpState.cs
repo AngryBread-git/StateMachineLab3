@@ -9,11 +9,12 @@ public class PlayerJumpState : PlayerBaseState
     public PlayerJumpState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory)
     : base(currentContext, playerStateFactory) {
         IsRootState = true;
-        InitializeSubState();
+        
     }
 
     public override void EnterState() 
     {
+        InitializeSubState();
         PerformJump();
     }
 
@@ -90,7 +91,7 @@ public class PlayerJumpState : PlayerBaseState
 
         //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
 
-        //the video multiplies these by 0.5f. but that seems very odd. means that maxjumpheight becomes incorrect.
+
         Context.CurrentWalkMovementY = Context.InitialJumpVelocities[Context.JumpCount];
         Context.AppliedMovementY = Context.InitialJumpVelocities[Context.JumpCount];
         //Debug.Log(string.Format("Perform jump, _context.CurrentWalkMovementY velocity: {0}", Context.CurrentWalkMovementY));

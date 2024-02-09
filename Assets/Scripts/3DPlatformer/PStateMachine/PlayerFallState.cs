@@ -33,12 +33,6 @@ public class PlayerFallState : PlayerBaseState, IRootState
         Context.Animator.SetBool(Context.IsFallingHash, false);
     }
 
-    public void ApplyGravity() 
-    {
-        _previousYVelocity = Context.CurrentWalkMovementY;
-        Context.CurrentWalkMovementY = Context.CurrentWalkMovementY + Context.Gravity + Time.deltaTime;
-        Context.AppliedMovementY = Mathf.Max((_previousYVelocity + Context.CurrentWalkMovementY) * 0.5f, _maxFallSpeed);
-    }
 
     public override void CheckSwitchState()
     {
@@ -63,6 +57,13 @@ public class PlayerFallState : PlayerBaseState, IRootState
         {
             SetSubState(Factory.Run());
         }
+    }
+
+    public void ApplyGravity()
+    {
+        _previousYVelocity = Context.CurrentWalkMovementY;
+        Context.CurrentWalkMovementY = Context.CurrentWalkMovementY + Context.Gravity + Time.deltaTime;
+        Context.AppliedMovementY = Mathf.Max((_previousYVelocity + Context.CurrentWalkMovementY) * 0.5f, _maxFallSpeed);
     }
 
 

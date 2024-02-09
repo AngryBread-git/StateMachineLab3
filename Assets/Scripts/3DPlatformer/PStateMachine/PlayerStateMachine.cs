@@ -26,7 +26,7 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private float _gravity = -9.82f;
     [SerializeField] private float _gravityFallMultiplier = 1.5f;
     [SerializeField] private float _maxFallSpeed = -20.0f;
-
+    [SerializeField] private float _wallSlideSpeed = -4.0f;
 
     [Space(1.0f)]
     [Header("Jump Variables")]
@@ -47,7 +47,9 @@ public class PlayerStateMachine : MonoBehaviour
     private float _firstJumpVelocity;
     private bool _isJumping;
     private bool _requireNewJumpPress;
-    [SerializeField] private int _jumpCount = 0;
+    private int _jumpCount = 0;
+
+    private bool _isOnWall;
 
     private Dictionary<int, float> _initialJumpVelocities = new Dictionary<int, float>();
     private Dictionary<int, float> _jumpGravityValues = new Dictionary<int, float>();
@@ -127,6 +129,11 @@ public class PlayerStateMachine : MonoBehaviour
     public float MaxFallSpeed
     {
         get { return _maxFallSpeed; }
+    }
+
+    public float WallSlideSpeed
+    {
+        get { return _wallSlideSpeed; }
     }
 
     public int JumpCount 
@@ -401,6 +408,14 @@ public class PlayerStateMachine : MonoBehaviour
         _isJumpPressed = context.ReadValueAsButton();
         //Debug.Log(_isJumpPressed);
         _requireNewJumpPress = false;
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (hit.transform.CompareTag("JumpWall")) 
+        {
+
+        }
     }
 
     private void OnEnable()

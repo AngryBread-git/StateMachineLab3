@@ -70,7 +70,7 @@ public abstract class PlayerBaseState
         ExitState();
 
         //enter the new state
-        Debug.Log(string.Format("BaseState. entering {0}", stateToEnter));
+        //Debug.Log(string.Format("BaseState. entering {0}", stateToEnter));
 
         stateToEnter.EnterState();
 

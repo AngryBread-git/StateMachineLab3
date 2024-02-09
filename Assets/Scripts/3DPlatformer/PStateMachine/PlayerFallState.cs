@@ -37,9 +37,13 @@ public class PlayerFallState : PlayerBaseState, IRootState
     public override void CheckSwitchState()
     {
         //if the character is grounded, switch to the grounded state.
-        if (Context.CharacterController.isGrounded) 
+        if (Context.CharacterController.isGrounded)
         {
             SwitchState(Factory.Grounded());
+        }
+        else if (Context.IsOnWall) 
+        {
+            SwitchState(Factory.WallSlide());
         }
     }
 
@@ -65,7 +69,5 @@ public class PlayerFallState : PlayerBaseState, IRootState
         Context.CurrentWalkMovementY = Context.CurrentWalkMovementY + Context.Gravity + Time.deltaTime;
         Context.AppliedMovementY = Mathf.Max((_previousYVelocity + Context.CurrentWalkMovementY) * 0.5f, _maxFallSpeed);
     }
-
-
 
 }

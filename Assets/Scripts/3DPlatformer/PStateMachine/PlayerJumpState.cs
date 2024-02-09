@@ -50,6 +50,10 @@ public class PlayerJumpState : PlayerBaseState
         {
             SwitchState(Factory.Grounded());
         }
+        else if (Context.IsOnWall)
+        {
+            SwitchState(Factory.WallSlide());
+        }
     }
 
     public override void InitializeSubState() 

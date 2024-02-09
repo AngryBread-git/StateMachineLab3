@@ -49,7 +49,7 @@ public class PlayerStateMachine : MonoBehaviour
     private bool _requireNewJumpPress;
     private int _jumpCount = 0;
 
-    private bool _isOnWall;
+    [SerializeField] private bool _isOnWall;
 
     private Dictionary<int, float> _initialJumpVelocities = new Dictionary<int, float>();
     private Dictionary<int, float> _jumpGravityValues = new Dictionary<int, float>();
@@ -140,6 +140,12 @@ public class PlayerStateMachine : MonoBehaviour
     {
         get { return _jumpCount; }
         set { _jumpCount = value; }
+    }
+
+    public bool IsOnWall 
+    {
+        get { return _isOnWall; }
+        set { _isOnWall = value; }
     }
 
     public int IsWalkingHash
@@ -410,13 +416,24 @@ public class PlayerStateMachine : MonoBehaviour
         _requireNewJumpPress = false;
     }
 
-    private void OnControllerColliderHit(ControllerColliderHit hit)
+
+    private void OnTriggerStay(Collider other)
+    {
+        //CharacterController.attachedRigidbody
+    }
+
+
+    /*private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         if (hit.transform.CompareTag("JumpWall")) 
         {
-
+            Debug.Log(string.Format("Hit Jump wall"));
+            _isOnWall = true;
         }
     }
+    */
+
+    
 
     private void OnEnable()
     {

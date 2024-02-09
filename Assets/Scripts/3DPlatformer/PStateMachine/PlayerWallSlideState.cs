@@ -10,6 +10,7 @@ public class PlayerWallSlideState : PlayerBaseState, IRootState
     {
         IsRootState = true;
     }
+    float _previousYVelocity;
     private float _wallSlideSpeed;
 
     public override void EnterState()
@@ -32,11 +33,17 @@ public class PlayerWallSlideState : PlayerBaseState, IRootState
         //Debug.Log(string.Format("Exit State: WallSlideState"));
 
         //turn off animation
+        Context.IsOnWall = false;
     }
 
     public override void CheckSwitchState()
     {
-        throw new System.NotImplementedException();
+        //or go to jump. I suppose.
+
+        if (Context.CharacterController.isGrounded)
+        {
+            SwitchState(Factory.Grounded());
+        }
     }
 
 
@@ -59,14 +66,11 @@ public class PlayerWallSlideState : PlayerBaseState, IRootState
 
     public void ApplyGravity()
     {
-        throw new System.NotImplementedException();
+
+        //apply lower gravity
+        _previousYVelocity = Context.CurrentWalkMovementY;
+        Context.CurrentWalkMovementY = Context.CurrentWalkMovementY + Context.Gravity + Time.deltaTime;
+        Context.AppliedMovementY = Mathf.Max((_previousYVelocity + Context.CurrentWalkMovementY) * 0.5f, _wallSlideSpeed);
     }
-
-
-
-
-
-
-
 
 }

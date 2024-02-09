@@ -5,12 +5,12 @@ using UnityEngine;
 public class PlayerJumpState : PlayerBaseState
 {
 
-
     public PlayerJumpState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory)
     : base(currentContext, playerStateFactory) {
         IsRootState = true;
-        
     }
+
+    private bool _isFalling;
 
     public override void EnterState() 
     {
@@ -50,10 +50,12 @@ public class PlayerJumpState : PlayerBaseState
         {
             SwitchState(Factory.Grounded());
         }
+        //arghhhh
         else if (Context.IsOnWall)
         {
-            SwitchState(Factory.WallSlide());
+            SwitchState(Factory.WallRun());
         }
+        
     }
 
     public override void InitializeSubState() 
@@ -91,7 +93,7 @@ public class PlayerJumpState : PlayerBaseState
         Context.JumpCount += 1;
         Context.Animator.SetInteger(Context.JumpCountHash, Context.JumpCount);
 
-        Debug.Log(string.Format("Perform jump, _context.JumpCount: {0}", Context.JumpCount));
+        //Debug.Log(string.Format("Perform jump, _context.JumpCount: {0}", Context.JumpCount));
 
         //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
 
@@ -104,18 +106,18 @@ public class PlayerJumpState : PlayerBaseState
 
     public void ApplyGravity() 
     {
-        bool isFalling = false;
+        _isFalling = false;
 
         //check if the character is falling
         //not a big fan of this, seems like falling gravity gets applied very late in the jump.
-        if (Context.CurrentWalkMovementY < -0.5f || !Context.IsJumpPressed)
+        if (Context.CurrentWalkMovementY < -0.25f || !Context.IsJumpPressed)
         {
-            isFalling = true;
+            _isFalling = true;
             //Debug.Log(string.Format("ApplyGravity, _isFalling", _isFalling));
             //Debug.Log(string.Format("Perform jump, walk y velocity: {0}", currentWalkMovement.y));
         }
 
-        if (isFalling)
+        if (_isFalling)
         {
             float previousYVelocity = Context.CurrentWalkMovementY;
             //Verlet

@@ -15,7 +15,9 @@ public class PlayerRunState : PlayerBaseState
 
     public override void UpdateState() 
     {
-        //_context.AppliedMovementX = _context.RunSpeed
+        //Lerp to it if lower. or set it if higher.
+        //aka I want some acceleration here.
+
         Context.AppliedMovementX = Context.CurrentMovementInput.x * Context.RunSpeed;
         Context.AppliedMovementZ = Context.CurrentMovementInput.y * Context.RunSpeed;
         CheckSwitchState();

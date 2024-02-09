@@ -26,7 +26,8 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private float _gravity = -9.82f;
     [SerializeField] private float _gravityFallMultiplier = 1.5f;
     [SerializeField] private float _maxFallSpeed = -20.0f;
-    [SerializeField] private float _wallSlideSpeed = -4.0f;
+    [SerializeField] private float _wallRunGravity = -4.0f;
+    private Vector3 _wallSurfaceNormal;
 
     [Space(1.0f)]
     [Header("Jump Variables")]
@@ -65,7 +66,7 @@ public class PlayerStateMachine : MonoBehaviour
     //input values. should have a fold-out
     [Header("Display for Debug Values")]
     [SerializeField] private Vector2 _currentMovementInput;
-    [SerializeField] private Vector3 _currentWalkMovement;
+    private Vector3 _currentWalkMovement;
     [SerializeField] private Vector3 _currentRunMovement;
     [SerializeField] private Vector3 _appliedMovement;
     private Vector3 _cameraRelativeAppliedMovement;
@@ -131,9 +132,14 @@ public class PlayerStateMachine : MonoBehaviour
         get { return _maxFallSpeed; }
     }
 
-    public float WallSlideSpeed
+    public float WallRunGravity
     {
-        get { return _wallSlideSpeed; }
+        get { return _wallRunGravity; }
+    }
+
+    public Vector3 WallSurfaceNormal 
+    {
+        get { return _wallSurfaceNormal; }
     }
 
     public int JumpCount 
@@ -203,6 +209,16 @@ public class PlayerStateMachine : MonoBehaviour
         get { return _gravity; }
     }
 
+    public float WalkSpeed 
+    {
+        get { return _walkSpeed; }
+    }
+
+    public float RunSpeed
+    {
+        get { return _runSpeed; }
+    }
+
     public float CurrentWalkMovementY
     {
         get { return _currentWalkMovement.y; }
@@ -227,10 +243,6 @@ public class PlayerStateMachine : MonoBehaviour
         set { _appliedMovement.z = value; }
     }
 
-    public float RunSpeed 
-    {
-        get { return _runSpeed; }
-    }
 
     public Vector2 CurrentMovementInput 
     {
@@ -392,16 +404,9 @@ public class PlayerStateMachine : MonoBehaviour
     void OnMovementInput(InputAction.CallbackContext context)
     {
         _currentMovementInput = context.ReadValue<Vector2>();
-        //set the walking speed. this will get fixed in the StateMachine version.
-        _currentWalkMovement.x = _currentMovementInput.x * _walkSpeed;
-        _currentWalkMovement.z = _currentMovementInput.y * _walkSpeed;
-
-        //set the runnning speed. yeah, no shot this should be calculated every frame.
-        _currentRunMovement.x = _currentMovementInput.x * _runSpeed;
-        _currentRunMovement.z = _currentMovementInput.y * _runSpeed;
 
         //check if there is any input, and assign to bool.
-        _isMovementPressed = _currentWalkMovement.x != 0 || _currentMovementInput.y != 0;
+        _isMovementPressed = _currentMovementInput.x != 0 || _currentMovementInput.y != 0;
     }
 
     void OnRun(InputAction.CallbackContext context)
@@ -416,24 +421,18 @@ public class PlayerStateMachine : MonoBehaviour
         _requireNewJumpPress = false;
     }
 
-
-    private void OnTriggerStay(Collider other)
+    private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        //CharacterController.attachedRigidbody
-    }
-
-
-    /*private void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        if (hit.transform.CompareTag("JumpWall")) 
+        if (hit.transform.CompareTag("JumpWall") && !_characterController.isGrounded) 
         {
-            Debug.Log(string.Format("Hit Jump wall"));
+            //Debug.Log(string.Format("Hit Jump wall"));
+            _wallSurfaceNormal = hit.normal;
             _isOnWall = true;
+
         }
     }
-    */
-
     
+
 
     private void OnEnable()
     {

@@ -7,8 +7,7 @@ public class PlayerFallState : PlayerBaseState, IRootState
     public PlayerFallState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory)
     : base(currentContext, playerStateFactory)
     {
-        IsRootState = true;
-        
+        IsRootState = true;  
     }
     float _previousYVelocity;
     float _maxFallSpeed;
@@ -43,7 +42,7 @@ public class PlayerFallState : PlayerBaseState, IRootState
         }
         else if (Context.IsOnWall) 
         {
-            SwitchState(Factory.WallSlide());
+            SwitchState(Factory.WallRun());
         }
     }
 

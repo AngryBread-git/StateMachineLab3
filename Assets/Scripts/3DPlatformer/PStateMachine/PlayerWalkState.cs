@@ -17,9 +17,12 @@ public class PlayerWalkState : PlayerBaseState
     public override void UpdateState() 
     {
         CheckSwitchState();
-        //* walkspeed?
-        Context.AppliedMovementX = Context.CurrentMovementInput.x;
-        Context.AppliedMovementZ = Context.CurrentMovementInput.y;
+
+        //Lerp to it if lower. or set it if higher.
+        //aka I want some acceleration here.
+
+        Context.AppliedMovementX = Context.CurrentMovementInput.x * Context.WalkSpeed;
+        Context.AppliedMovementZ = Context.CurrentMovementInput.y * Context.WalkSpeed;
 
     }
 

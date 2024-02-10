@@ -77,7 +77,6 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private bool _isRunPressed;
     [SerializeField] private bool _isFalling;
 
-    float EPSILON_SQR = 0.0001f;
 
     //Getters and setters
 
@@ -427,6 +426,7 @@ public class PlayerStateMachine : MonoBehaviour
         {
             //Debug.Log(string.Format("Hit Jump wall"));
             _wallSurfaceNormal = hit.normal;
+            Debug.Log(string.Format("Hit Jump wall, _wallSurfaceNormal: {0}", _wallSurfaceNormal));
             _isOnWall = true;
 
         }

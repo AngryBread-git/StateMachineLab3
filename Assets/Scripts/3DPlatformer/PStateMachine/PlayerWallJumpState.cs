@@ -65,8 +65,8 @@ public class PlayerWallJumpState : PlayerBaseState, IRootState
         Vector3 wallSurfaceNormal = Context.WallSurfaceNormal;
 
         //idk
-        Context.AppliedMovementX = Context.CurrentMovementInput.x * Context.RunSpeed * wallSurfaceNormal.x;
-        Context.AppliedMovementZ = Context.CurrentMovementInput.y * Context.RunSpeed * wallSurfaceNormal.z;
+        Context.AppliedMovementX = Context.CurrentMovementInput.x * Context.RunSpeed * -wallSurfaceNormal.x;
+        Context.AppliedMovementZ = Context.CurrentMovementInput.y * Context.RunSpeed * -wallSurfaceNormal.z;
         Context.CurrentWalkMovementY = Context.InitialJumpVelocities[1];
     }
 

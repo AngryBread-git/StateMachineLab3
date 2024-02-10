@@ -13,24 +13,35 @@ public class PlayerWallRunState : PlayerBaseState, IRootState
     float _previousYVelocity;
     private float _wallRunGravity;
     bool _hasLowMovement;
+    bool _isAwayFromWall;
 
-    private float _absAppliedMovementX;
+    private Vector3 _wallSurfaceNormal;
 
-    private float _absAppliedMovementZ;
+    private float _appliedMovementX;
+
+    private float _appliedMovementZ;
 
     public override void EnterState()
     {
         InitializeSubState();
         Debug.Log(string.Format("Enter State: WallRunState"));
         _wallRunGravity = Context.WallRunGravity;
+        _wallSurfaceNormal = Context.WallSurfaceNormal;
+
         //turn on animation
         //set other movement to 0.
         _hasLowMovement = false;
+        _isAwayFromWall = false;
     }
 
     public override void UpdateState()
     {
         ApplyGravity();
+
+        _appliedMovementX = Context.AppliedMovementX;
+        _appliedMovementZ = Context.AppliedMovementZ;
+
+        CheckMovementDirection();
         CheckMovementSpeed();
         CheckSwitchState();
 
@@ -47,13 +58,12 @@ public class PlayerWallRunState : PlayerBaseState, IRootState
 
     public override void CheckSwitchState()
     {
-        //or go to jump. I suppose.
         if (Context.IsJumpPressed)
         {
             //SwitchState(Factory.WallJump());
         }
 
-        else if (_hasLowMovement) 
+        else if (_hasLowMovement || _isAwayFromWall) 
         {
             SwitchState(Factory.Fall());
         }
@@ -74,19 +84,28 @@ public class PlayerWallRunState : PlayerBaseState, IRootState
 
     public void CheckMovementSpeed() 
     {
-        //make vars.
-        _absAppliedMovementX = Mathf.Abs(Context.AppliedMovementX);
 
-        _absAppliedMovementZ = Mathf.Abs(Context.AppliedMovementZ);
+        //Debug.Log(string.Format("WallRunState. absAppX is: {0}", _absAppliedMovementX.ToString()));
+        //Debug.Log(string.Format("WallRunState. absAppZ is: {0}", _absAppliedMovementZ.ToString()));
 
-        Debug.Log(string.Format("WallRunState. absAppX is: {0}", _absAppliedMovementX.ToString()));
-        Debug.Log(string.Format("WallRunState. absAppZ is: {0}", _absAppliedMovementZ.ToString()));
-
-        if (_absAppliedMovementX + _absAppliedMovementZ < 1.0f) 
+        if (Mathf.Abs(_appliedMovementX) + Mathf.Abs(_appliedMovementZ) < 1.0f) 
         {
             Debug.Log(string.Format("WallRunState. slow movement"));
             _hasLowMovement = true;
         }
+    }
+
+    public void CheckMovementDirection() 
+    {
+
+        //if _appliedMovementX and _wallSurfaceNormal.x, or Z and .z, are both pos, or neg, then the player is moving away from the wall.
+        if ((_appliedMovementX > 0 && _wallSurfaceNormal.x > 0 ) || (_appliedMovementX < 0 && _wallSurfaceNormal.x < 0)
+            || (_appliedMovementZ > 0 && _wallSurfaceNormal.z > 0) || (_appliedMovementZ < 0 && _wallSurfaceNormal.z < 0)) 
+        {
+            Debug.Log(string.Format("WallRunState. Moved away from wall"));
+            _isAwayFromWall = true;
+        }
+        
     }
 
 

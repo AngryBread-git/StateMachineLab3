@@ -9,8 +9,7 @@ public class PlayerIdleState : PlayerBaseState
 
     public override void EnterState() 
     {
-        Context.Animator.SetBool(Context.IsWalkingHash, false);
-        Context.Animator.SetBool(Context.IsRunningHash, false);
+        Context.ChangeAnimationState("Idle");
 
         Context.AppliedMovementX = 0;
         Context.AppliedMovementZ = 0;

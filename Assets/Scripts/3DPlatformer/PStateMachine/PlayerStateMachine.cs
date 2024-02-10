@@ -12,11 +12,9 @@ public class PlayerStateMachine : MonoBehaviour
 
 
     //animation refs
-    private int _isWalkingHash;
-    private int _isRunningHash;
-    private int _isJumpingHash;
-    private int _jumpCountHash;
-    private int _isFallingHash;
+
+    private string _currentAnimationName = "";
+    private string _lastSubstateAnitmationName = "";
 
     [Header("Player Control Variables")]
     [Range(4, 8)] [SerializeField] private float _rotationFactor = 0.6f;
@@ -153,30 +151,7 @@ public class PlayerStateMachine : MonoBehaviour
         set { _isOnWall = value; }
     }
 
-    public int IsWalkingHash
-    {
-        get { return _isWalkingHash; }
-    }
-
-    public int IsRunningHash
-    {
-        get { return _isRunningHash; }
-    }
-
-    public int IsJumpingHash
-    {
-        get { return _isJumpingHash; }
-    }
-
-    public int IsFallingHash
-    {
-        get { return _isFallingHash; }
-    }
-
-    public int JumpCountHash
-    {
-        get { return _jumpCountHash; }
-    }
+    
 
     public bool RequireNewJumpPress
     {
@@ -274,12 +249,6 @@ public class PlayerStateMachine : MonoBehaviour
         _playerCamera = Camera.main;
 
         Debug.Log(string.Format("Setup Vars, _currentState: {0}", _currentState));
-
-        _isWalkingHash = Animator.StringToHash("isWalking");
-        _isRunningHash = Animator.StringToHash("isRunning");
-        _isJumpingHash = Animator.StringToHash("isJumping");
-        _jumpCountHash = Animator.StringToHash("jumpCount");
-        _isFallingHash = Animator.StringToHash("isFalling");
 
         platformerPlayerInput.CharacterControls.Move.started += context => {
             //Debug.Log(context.ReadValue<Vector2>());
@@ -431,7 +400,35 @@ public class PlayerStateMachine : MonoBehaviour
 
         }
     }
-    
+
+    public void ChangeAnimationState(string stateName) 
+    {
+        if (_currentAnimationName.Equals(stateName)) 
+        {
+            return;
+        }
+        _animator.Play(stateName);
+
+        _currentAnimationName = stateName;
+
+        //So the last animation is saved for after a jump, fall etc. 
+        if (stateName.Equals("Idle") || stateName.Equals("Walk") || stateName.Equals("Run"))
+        {
+            _lastSubstateAnitmationName = stateName;
+        }
+            
+    }
+
+    public void ChangeToLastSubstateAnimation() 
+    {
+        if (_currentAnimationName.Equals(_lastSubstateAnitmationName))
+        {
+            return;
+        }
+
+        ChangeAnimationState(_lastSubstateAnitmationName);
+
+    }
 
 
     private void OnEnable()

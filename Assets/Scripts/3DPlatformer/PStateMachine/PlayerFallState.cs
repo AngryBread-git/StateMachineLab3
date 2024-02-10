@@ -17,7 +17,8 @@ public class PlayerFallState : PlayerBaseState, IRootState
         InitializeSubState();
         //Debug.Log(string.Format("Enter State: FallState"));
         _maxFallSpeed = Context.MaxFallSpeed;
-        Context.Animator.SetBool(Context.IsFallingHash, true);
+
+        Context.ChangeAnimationState("Fall");
     }
 
     public override void UpdateState()
@@ -29,7 +30,7 @@ public class PlayerFallState : PlayerBaseState, IRootState
     public override void ExitState()
     {
         //Debug.Log(string.Format("Exit State: FallState"));
-        Context.Animator.SetBool(Context.IsFallingHash, false);
+
     }
 
 

@@ -28,8 +28,8 @@ public class PlayerJumpState : PlayerBaseState
 
     public override void ExitState() 
     {
-        Context.Animator.SetBool(Context.IsJumpingHash, false);
-        if(Context.IsJumpPressed)
+        Context.ChangeToLastSubstateAnimation();
+        if (Context.IsJumpPressed)
         {
             Context.RequireNewJumpPress = true;
         }
@@ -40,7 +40,7 @@ public class PlayerJumpState : PlayerBaseState
         if (Context.JumpCount == 3)
         {
             Context.JumpCount = 0;
-            Context.Animator.SetInteger(Context.JumpCountHash, Context.JumpCount);
+
         }
     }
 
@@ -50,7 +50,7 @@ public class PlayerJumpState : PlayerBaseState
         {
             SwitchState(Factory.Grounded());
         }
-        //arghhhh
+
         else if (Context.IsOnWall)
         {
             SwitchState(Factory.WallRun());
@@ -88,14 +88,22 @@ public class PlayerJumpState : PlayerBaseState
             Context.StopCoroutine(Context.CurrentResetJumpRoutine);
         }
 
-        Context.Animator.SetBool(Context.IsJumpingHash, true);
+        //Context.Animator.SetBool(Context.IsJumpingHash, true);
         Context.IsJumping = true;
         Context.JumpCount += 1;
-        Context.Animator.SetInteger(Context.JumpCountHash, Context.JumpCount);
 
-        //Debug.Log(string.Format("Perform jump, _context.JumpCount: {0}", Context.JumpCount));
-
-        //Debug.Log(string.Format("Perform jump, apply y velocity: {0}", _initialJumpVelocity));
+        if (Context.JumpCount == 1) 
+        {
+            Context.ChangeAnimationState("Jump1");
+        }
+        else if (Context.JumpCount == 2)
+        {
+            Context.ChangeAnimationState("Jump2");
+        }
+        else if (Context.JumpCount == 3)
+        {
+            Context.ChangeAnimationState("Jump3");
+        }
 
 
         Context.CurrentWalkMovementY = Context.InitialJumpVelocities[Context.JumpCount];
